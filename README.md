@@ -20,4 +20,9 @@ Subfunction: phys_switch.m, percep_switch.m
 Plots the results of the task.  
 Subfunction: square_colouring.m  
   
-The project is ongoing and significant changes are to be expected...
+The project is ongoing and significant changes are to be expected...  
+
+## Stimuli
+![stimulus left](/stimulus/left.png)
+![stimulus right](/stimulus/right.png)
+![stimulus overlap](/stimulus/overlap.png)
