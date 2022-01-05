@@ -10,11 +10,12 @@ mkdir stimulus
 
 %% Parameters
 savefile = 1; % 1: save data
-orientation = [0 1]; % orientation: 0 for vertical, 1 for horizontal
+orientation = [0 1 2]; % orientation: 0 for vertical, 1 for horizontal, 2 for both overlapped
 
 dist_scr = 42; % distance from screen (cm)
 radius_gra = 5; % radius of grating circle (deg)
-cont = 255; % contrast intensity [1 255]; 255 is the strongest
+cont_l = 255; % contrast intensity [1 255]; 255 is the strongest
+cont_r = 255; % contrast intensity [1 255]; 255 is the strongest
 
 %% Define grating stimulus
 prompt = 'How many inches is the screen?: ';
@@ -54,61 +55,83 @@ xysize = diameter/(2.54/(screen_diagonal/screen_inch));
 xylim = 2*pi*cycles;
 image_mono_v = zeros(round(xysize),round(xysize),3);
 image_mono_h = zeros(round(xysize),round(xysize),3);
-%img_r = zeros(xysize,xysize,3);
-%img_g = zeros(xysize,xysize,3);
 [x,y] = meshgrid(-xylim:2*xylim/(xysize-1):xylim, ...
     -xylim:2*xylim/(xysize-1):xylim);
 circle = x.^2 + y.^2 <= xylim^2; % circular boundry
 % create gratings
-image_mono_v(:,:,1) = (sin(x)+1)/2*cont .* circle; % R channel; 255 is max contrast
-%image_mono_v(:,:,2) = (sin(x)+1)/2*cont .* circle; % G channel
-%image_mono_v(:,:,3) = (sin(x)+1)/2*cont .* circle; % B channel
-image_mono_v(:,:,4) = 255/2; % alpha chanel (transparency); the drawing destination in perceptual
-%image_mono_h(:,:,1) = (sin(y)+1)/2*cont .* circle;
-%image_mono_h(:,:,2) = (sin(y)+1)/2*cont .* circle;
-image_mono_h(:,:,3) = (sin(y)+1)/2*cont .* circle;
-image_mono_h(:,:,4) = 255/2; % alpha chanel (transparency)
-%image_mono_v = (sin(x)+1)/2*cont .* circle; % 256 is max contrast
-%image_mono_h = (sin(y)+1)/2*cont .* circle;
-%img_r(:,:,1) = (sin(x)+1)/2*255 .* circle; % red channel
-%img_g(:,:,2) = (sin(y)+1)/2*255 .* circle; % green channel
-% img(:,:,3) = (sin(y)+1)/2*255 .* circle; % blue channel (comment green and uncomment blue if googles are red/blue)
-gratingtex_mono_v = Screen('MakeTexture', w, image_mono_v);
-gratingtex_mono_h = Screen('MakeTexture', w, image_mono_h);
-%gratingtex_r = Screen('MakeTexture', w, img_r);
-%gratingtex_g= Screen('MakeTexture', w, img_g);
+image_mono_v(:,:,1) = 255; % R channel; 255 is max contrast
+image_mono_v(:,:,1) = (sin(x)+1)/2*cont_l .* circle; % R channel; 255 is max contrast
+%image_mono_v(:,:,2) = (sin(x)+1)/2*cont_l .* circle; % G channel
+%image_mono_v(:,:,3) = (sin(x)+1)/2*cont_l .* circle; % B channel
+%image_mono_v(:,:,4) = 255/2; % alpha chanel (transparency); the drawing destination in perceptual
+%image_mono_h(:,:,1) = (sin(y)+1)/2*cont_r .* circle;
+%image_mono_h(:,:,2) = (sin(y)+1)/2*cont_r .* circle;
+image_mono_h(:,:,3) = 255;
+image_mono_h(:,:,3) = (sin(y)+1)/2*cont_r .* circle;
+%image_mono_h(:,:,4) = 255/2; % alpha chanel (transparency)
 
+mono_v = Screen('MakeTexture', w, image_mono_v);
+mono_h = Screen('MakeTexture', w, image_mono_h);
+
+red_filter = zeros(rect(4),rect(3),3);
+blue_filter = zeros(rect(4),rect(3),3);
+red_filter(:,:,1) = 255;
+red_filter(:,:,4) = 255*0.5;
+red_filter = Screen('MakeTexture', w, red_filter);
+blue_filter(:,:,3) = 255;
+blue_filter(:,:,4) = 255*0.5;
+blue_filter = Screen('MakeTexture', w, blue_filter);
+
+%{
 if savefile == 1 
     save('stimulus/grating_v.mat','image_mono_v')
     save('stimulus/grating_h.mat','image_mono_h')
 end
+%}
 
-%% Animation loop: Run until timeout
+%% Animation
 [vbl, start] = Screen('Flip', w);
 
 filename = [];
 for i = orientation
     if i == 0 % vertical
-        Screen('DrawTexture', w, gratingtex_mono_v)
-        %Screen('DrawTexture', w, gratingtex_r)
+        Screen('DrawTexture', w, mono_v)
+        Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        Screen('DrawTexture', w, red_filter)
         Screen('Flip', w); % 画面を更新
         if savefile == 1
             imageArray = Screen('GetImage', w); % 画面全体の色情報を取得
-            imwrite(imageArray, 'stimulus/grating_v.png'); 
+            imwrite(imageArray, 'stimulus/left.png'); 
         end
     elseif i == 1 % horizontal
-        Screen('DrawTexture', w, gratingtex_mono_h)
-%        Screen('DrawTexture', w, gratingtex_g)
+        Screen('DrawTexture', w, mono_h)
+        Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        Screen('DrawTexture', w, blue_filter)
         Screen('Flip', w); % 画面を更新
         if savefile == 1
             imageArray = Screen('GetImage', w); % 画面全体の色情報を取得
-            imwrite(imageArray, 'stimulus/grating_h.png'); 
+            imwrite(imageArray, 'stimulus/right.png'); 
+        end
+    elseif i == 2 % overlapped image
+        imdata_l  = imread('stimulus/left.png', 'png'); % vertical corresponds to left
+        imdata_l(:,:,4) = 255*0.5; % alpha channel
+        imdata_r  = imread('stimulus/right.png', 'png'); % horizontal corresponds to right
+        imdata_r(:,:,4) = 255*0.5; % alpha channel
+        imagetex_l = Screen('MakeTexture', w, imdata_l);
+        imagetex_r = Screen('MakeTexture', w, imdata_r);
+        %Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        Screen('DrawTexture', w, imagetex_l)
+        Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        Screen('DrawTexture', w, imagetex_r)
+        Screen('Flip', w); % 画面を更新
+        if savefile == 1
+            imageArray = Screen('GetImage', w); % 画面全体の色情報を取得
+            imwrite(imageArray, 'stimulus/overlap.png'); 
         end
     end
 end
 
 Screen('DrawingFinished', w); % Tell PTB that no further drawing commands will follow before Screen('Flip')
-
 % The same commands wich close onscreen and offscreen windows also close textures.
 sca;
 

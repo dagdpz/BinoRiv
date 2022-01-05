@@ -23,7 +23,6 @@ report = 1; %0 is no report, 1 is report (i.e. record key pressing)
 fix_size = 0.25; % diameter of a fixation spot (deg)
 %colour_comb = 0; % 0 is (Red Blue), 1 is (Blue Red)
 num_superblock = 5; % the number of super-blocks
-rest = 120; % break time (sec) after physical/binocular % 120000 ms
 
 screen_inch = 15.6; % size of the screen (inch)
 dist_scr = 42; % distance from screen (cm)
@@ -68,6 +67,8 @@ if subj_type == 0 % human
     trial_len = 2.0; % 2000 ms
     num_trial = 8;
     num_triad = 12;
+    rest = 8; % break time (sec) after physical/binocular blocks % 8000 ms
+    brk = 120; % break time (sec) after one super-block 
 elseif subj_type == 1 % monkey
     trial_len = 0.8; % 800 ms
     num_trial = 8;
@@ -79,12 +80,16 @@ for i=1:num_trial/2;phys_stim=horzcat(phys_stim,0);end
 for i=1:num_trial/2;phys_stim=horzcat(phys_stim,1);end
 
 %% load stimuli
+%{
 imdata_l = load('stimulus/grating_v','image_mono_v');
 imdata_l = imdata_l.image_mono_v;
 imdata_r = load('stimulus/grating_h','image_mono_h');
 imdata_r = imdata_r.image_mono_h;
-%imdata_l  = imread('stimulus/grating_v.png', 'png'); % vertical corresponds to left
-%imdata_r  = imread('stimulus/grating_h.png', 'png'); % horizontal corresponds to right
+%}
+imdata_l  = imread('stimulus/left.png', 'png'); % vertical corresponds to left
+imdata_l(:,:,4) = 255*0.5; % alpha channel
+imdata_r  = imread('stimulus/right.png', 'png'); % horizontal corresponds to right
+imdata_r(:,:,4) = 255*0.5; % alpha channel
 imagetex_l = Screen('MakeTexture', w, imdata_l);
 imagetex_r = Screen('MakeTexture', w, imdata_r);
 
@@ -109,4 +114,12 @@ for i = 1:num_superblock
         end
         Screen('DrawingFinished', w); % Tell PTB that no further drawing commands will follow before Screen('Flip')
     end
+    
+    % Break
+    fprintf('Break now... \n')
+    [vbl, start] = Screen('Flip', w);
+    while (vbl < (brk + start))
+        vbl = Screen('Flip', w); % return current time
+    end
+    
 end

@@ -4,6 +4,7 @@ function percep_switch(w,red,blue,superblock,triad,trial_len,num_trial,imagetex_
 if report == 1
     % Define the key for reporting the content of perception
     KbName('UnifyKeyNames');
+    EscapeKey = KbName('ESCAPE');
     VertKey = KbName('UpArrow');
     HorzKey = KbName('LeftArrow');
 end
@@ -31,7 +32,7 @@ for t = 1:num_trial
     
     while (vbl < (trial_len + start))
         % left stimulus
-        Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        %Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         Screen('DrawTexture', w, imagetex_l);
         Screen('FillOval', w, red, fix_loc_l)
         % right stimulus
@@ -43,7 +44,9 @@ for t = 1:num_trial
         if report == 1
             % Record the time if subject pressed button
             [keyIsDown, press, KeyCode] = KbCheck;
-            if KeyCode(VertKey)==1
+            if KeyCode(EscapeKey)==1 
+                break
+            elseif KeyCode(VertKey)==1
                 vert_press = vertcat(vert_press, (vbl-start)*1000); % ms
             elseif KeyCode(HorzKey)==1 
                 horz_press = vertcat(horz_press, (vbl-start)*1000); % ms
