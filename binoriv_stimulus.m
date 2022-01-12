@@ -14,8 +14,8 @@ orientation = [0 1 2]; % orientation: 0 for vertical, 1 for horizontal, 2 for bo
 
 dist_scr = 42; % distance from screen (cm)
 radius_gra = 5; % radius of grating circle (deg)
-cont_l = 255; % contrast intensity [1 255]; 255 is the strongest
-cont_r = 255; % contrast intensity [1 255]; 255 is the strongest
+cont_l = 255/2; % contrast intensity [1 255]; 255 is the strongest
+cont_r = 255/2; % contrast intensity [1 255]; 255 is the strongest
 
 %% Define grating stimulus
 prompt = 'How many inches is the screen?: ';
@@ -96,8 +96,8 @@ filename = [];
 for i = orientation
     if i == 0 % vertical
         Screen('DrawTexture', w, mono_v)
-        Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        Screen('DrawTexture', w, red_filter)
+        %Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        %Screen('DrawTexture', w, red_filter)
         Screen('Flip', w); % 画面を更新
         if savefile == 1
             imageArray = Screen('GetImage', w); % 画面全体の色情報を取得
@@ -105,8 +105,8 @@ for i = orientation
         end
     elseif i == 1 % horizontal
         Screen('DrawTexture', w, mono_h)
-        Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        Screen('DrawTexture', w, blue_filter)
+        %Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        %Screen('DrawTexture', w, blue_filter)
         Screen('Flip', w); % 画面を更新
         if savefile == 1
             imageArray = Screen('GetImage', w); % 画面全体の色情報を取得
@@ -114,7 +114,7 @@ for i = orientation
         end
     elseif i == 2 % overlapped image
         imdata_l  = imread('stimulus/left.png', 'png'); % vertical corresponds to left
-        imdata_l(:,:,4) = 255*0.5; % alpha channel
+        imdata_l(:,:,4) = 255; % alpha channel
         imdata_r  = imread('stimulus/right.png', 'png'); % horizontal corresponds to right
         imdata_r(:,:,4) = 255*0.5; % alpha channel
         imagetex_l = Screen('MakeTexture', w, imdata_l);

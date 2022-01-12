@@ -3,7 +3,7 @@ This repository provides the binocular rivalry task for anaglyph used in the pro
 Contact: Ryo Segawa (rsegawa@dpz.eu/whizznihil.kid@gmail.com)
 
 ## Prerequisites
-* R2018b or later version
+* MATLAB (R2018b or later version)
 * Psychophysics Toolbox Version 3 (PTB-3): http://psychtoolbox.org/
 
 ## Concept

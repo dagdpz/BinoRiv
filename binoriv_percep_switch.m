@@ -1,5 +1,5 @@
 % Author: Ryo Segawa (whizznihil.kid@gmail.com)
-function percep_switch(w,red,blue,superblock,triad,trial_len,num_trial,imagetex_l,imagetex_r,potential_loc,report,subj_dist)
+function binoriv_percep_switch(w,red,blue,superblock,triad,trial_len,num_trial,imagetex_l,imagetex_r,potential_loc,report,subj_dist)
 
 if report == 1
     % Define the key for reporting the content of perception
@@ -31,14 +31,14 @@ for t = 1:num_trial
     end
     
     while (vbl < (trial_len + start))
-        % left stimulus
-        %Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        Screen('DrawTexture', w, imagetex_l);
-        Screen('FillOval', w, red, fix_loc_l)
-        % right stimulus
+        % fixation spots
         Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        Screen('DrawTexture', w, imagetex_r); 
-        Screen('FillOval', w, blue, fix_loc_r)
+        Screen('FillOval', w, red, fix_loc_l);
+        Screen('FillOval', w, blue, fix_loc_r);
+        %stimuli
+        Screen('DrawTexture', w, imagetex_l);
+        Screen('DrawTexture', w, imagetex_r);
+        
         vbl = Screen('Flip', w); % return current time
         
         if report == 1

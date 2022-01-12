@@ -18,7 +18,7 @@ HideCursor;
 
 %% Parameters
 subj_type = 0; % 0 is human, 1 is monkey
-report = 1; %0 is no report, 1 is report (i.e. record key pressing)
+report = 0; %0 is no report (record only eye-tracking), 1 is report (i.e. record also key pressing)
 
 fix_size = 0.25; % diameter of a fixation spot (deg)
 %colour_comb = 0; % 0 is (Red Blue), 1 is (Blue Red)
@@ -97,20 +97,20 @@ imagetex_r = Screen('MakeTexture', w, imdata_r);
 for i = 1:num_superblock
             
     for j = 1:num_triad
-        phys_bino = randi([0 1],1,1); % if 0 phys->bino, if 1 bino->phys
+        phys_bino = 1%randi([0 1],1,1); % if 0 phys->bino, if 1 bino->phys
         phys_stim = phys_stim(randperm(num_trial)); % shuffle the order of the phys stimuli
         if phys_bino == 0  
-            phys_switch(w,red,blue,i,j,trial_len,num_trial,imagetex_l,imagetex_r,potential_loc,report,phys_stim,subj_dist);
-            percep_switch(w,red,blue,i,j,trial_len,num_trial,imagetex_l,imagetex_r,potential_loc,report,subj_dist);
+            binoriv_phys_switch(w,red,blue,i,j,trial_len,num_trial,imagetex_l,imagetex_r,potential_loc,report,phys_stim,subj_dist);
+            binoriv_percep_switch(w,red,blue,i,j,trial_len,num_trial,imagetex_l,imagetex_r,potential_loc,report,subj_dist);
         elseif phys_bino == 1
-            percep_switch(w,red,blue,i,j,trial_len,num_trial,imagetex_l,imagetex_r,potential_loc,report,subj_dist);
-            phys_switch(w,red,blue,i,j,trial_len,num_trial,imagetex_l,imagetex_r,potential_loc,report,phys_stim,subj_dist);
+            binoriv_percep_switch(w,red,blue,i,j,trial_len,num_trial,imagetex_l,imagetex_r,potential_loc,report,subj_dist);
+            binoriv_phys_switch(w,red,blue,i,j,trial_len,num_trial,imagetex_l,imagetex_r,potential_loc,report,phys_stim,subj_dist);
         end
 
         fprintf('Rest now... \n')
         [vbl, start] = Screen('Flip', w);
         while (vbl < (rest + start))
-            vbl = Screen('Flip', w); % return current time
+            vbl = Screen('Flip', w); % update screen
         end
         Screen('DrawingFinished', w); % Tell PTB that no further drawing commands will follow before Screen('Flip')
     end
