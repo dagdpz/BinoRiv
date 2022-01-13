@@ -63,12 +63,12 @@ image_mono_v(:,:,1) = 255; % R channel; 255 is max contrast
 image_mono_v(:,:,1) = (sin(x)+1)/2*cont_l .* circle; % R channel; 255 is max contrast
 %image_mono_v(:,:,2) = (sin(x)+1)/2*cont_l .* circle; % G channel
 %image_mono_v(:,:,3) = (sin(x)+1)/2*cont_l .* circle; % B channel
-%image_mono_v(:,:,4) = 255/2; % alpha chanel (transparency); the drawing destination in perceptual
+%image_mono_v(:,:,4) = 255*0.5; % alpha chanel (transparency); the drawing destination in perceptual
 %image_mono_h(:,:,1) = (sin(y)+1)/2*cont_r .* circle;
 %image_mono_h(:,:,2) = (sin(y)+1)/2*cont_r .* circle;
 image_mono_h(:,:,3) = 255;
 image_mono_h(:,:,3) = (sin(y)+1)/2*cont_r .* circle;
-%image_mono_h(:,:,4) = 255/2; % alpha chanel (transparency)
+%image_mono_h(:,:,4) = 255*0.5; % alpha chanel (transparency)
 
 mono_v = Screen('MakeTexture', w, image_mono_v);
 mono_h = Screen('MakeTexture', w, image_mono_h);
@@ -95,6 +95,7 @@ end
 filename = [];
 for i = orientation
     if i == 0 % vertical
+        Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         Screen('DrawTexture', w, mono_v)
         %Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         %Screen('DrawTexture', w, red_filter)
@@ -119,9 +120,8 @@ for i = orientation
         imdata_r(:,:,4) = 255*0.5; % alpha channel
         imagetex_l = Screen('MakeTexture', w, imdata_l);
         imagetex_r = Screen('MakeTexture', w, imdata_r);
-        %Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        Screen('DrawTexture', w, imagetex_l)
         Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        Screen('DrawTexture', w, imagetex_l)
         Screen('DrawTexture', w, imagetex_r)
         Screen('Flip', w); % 画面を更新
         if savefile == 1

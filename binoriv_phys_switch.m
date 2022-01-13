@@ -8,7 +8,7 @@ if report == 1
     VertKey = KbName('UpArrow');
     HorzKey = KbName('LeftArrow');
 end
-    
+
 fix_loc_label = randi([1 4],1,num_trial);
 answer = [];
 
@@ -28,11 +28,13 @@ for t = 1:num_trial
     
     while (vbl < (trial_len + start))
         if phys_stim(t) == 0 % L
+            %Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             Screen('DrawTexture', w, imagetex_l);
-            Screen('FillOval', w, red, fix_loc)
+            Screen('FillOval', w, red, fix_loc);
         elseif phys_stim(t) == 1 % R
+            %Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             Screen('DrawTexture', w, imagetex_r);
-            Screen('FillOval', w, blue, fix_loc)
+            Screen('FillOval', w, blue, fix_loc);
         end
         vbl = Screen('Flip', w); % return current time
         
