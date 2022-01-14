@@ -13,8 +13,9 @@ fix_loc_label = randi([1 4],1,num_trial);
 answer = [];
 
 % animation
+[vbl, start] = Screen('Flip', w);
 for t = 1:num_trial
-    [vbl, start] = Screen('Flip', w);
+%    [vbl, start] = Screen('Flip', w); % do not Flip here; otherwise the screen will flicker.
     fix_loc = potential_loc(fix_loc_label(1,t),:);
     if report == 1
         vert_press = [];
@@ -26,7 +27,7 @@ for t = 1:num_trial
         end
     end
     
-    while (vbl < (trial_len + start))
+    while (vbl < (t*trial_len + start))
         if phys_stim(t) == 0 % L
             %Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             Screen('DrawTexture', w, imagetex_l);

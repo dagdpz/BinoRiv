@@ -21,8 +21,9 @@ for i=1:num_trial
 end
 
 % animation
+[vbl, start] = Screen('Flip', w);
 for t = 1:num_trial
-    [vbl, start] = Screen('Flip', w);
+%    [vbl, start] = Screen('Flip', w); % do not Flip here; otherwise the screen will flicker.
     fix_loc_l = potential_loc(fix_loc_label(1,t),:);
     fix_loc_r = potential_loc(fix_loc_label(2,t),:); 
     if report == 1
@@ -30,7 +31,7 @@ for t = 1:num_trial
         horz_press = [];
     end
     
-    while (vbl < (trial_len + start))
+    while (vbl < (t*trial_len + start))
         % fixation spots
         Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         Screen('FillOval', w, red, fix_loc_l);
@@ -39,7 +40,7 @@ for t = 1:num_trial
         Screen('DrawTexture', w, imagetex_l);
         Screen('DrawTexture', w, imagetex_r);
         
-        vbl = Screen('Flip', w); % return current time
+        vbl = Screen('Flip', w); % update screen
         
         if report == 1
             % Record the time if subject pressed button

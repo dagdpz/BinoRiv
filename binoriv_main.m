@@ -27,7 +27,7 @@ num_superblock = 5; % the number of super-blocks
 screen_inch = 15.6; % size of the screen (inch)
 dist_scr = 42; % distance from screen (cm)
 
-%% Ask subject's name and num of attempts for output file
+%% Ask subject's name to output file
 prompt = 'What is the subject''s first name?: ';
 subj = input(prompt,'s');
 if  ischar(subj)

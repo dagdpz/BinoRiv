@@ -51,7 +51,7 @@ diameter = tand(V)*D; % cm
 %xysize = rect(4);
 screen_diagonal = sqrt(rect(3)^2 + rect(4)^2);
 xysize = diameter/(2.54/(screen_diagonal/screen_inch));
-
+xysize_annulus = xysize/2 + 20;
 xylim = 2*pi*cycles;
 image_mono_v = zeros(round(xysize),round(xysize),3);
 image_mono_h = zeros(round(xysize),round(xysize),3);
@@ -89,13 +89,14 @@ if savefile == 1
 end
 %}
 
-%% Animation
+%% Save images
 [vbl, start] = Screen('Flip', w);
 
 filename = [];
 for i = orientation
     if i == 0 % vertical
         Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        %Screen('FillOval', w, [255*0.5 255*0.5 255*0.5], [rect(4)-xysize_annulus rect(3)-xysize_annulus rect(4)+xysize_annulus rect(3)+xysize_annulus]);
         Screen('DrawTexture', w, mono_v)
         %Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         %Screen('DrawTexture', w, red_filter)
