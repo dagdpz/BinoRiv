@@ -13,7 +13,7 @@ The code framework consists of a programme to create stimuli, a programme to rea
 ## Procedure
 1. binoriv_stimulus.m  
 Create stimulus images for the task.
-2. main.m  
+2. binoriv_main.m  
 Show the stimulus image created in the previous step and execute the task.  
 Subfunction: phys_switch.m, percep_switch.m
 3. binoriv_repo_plot.m/  
