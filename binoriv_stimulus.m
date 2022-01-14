@@ -38,7 +38,7 @@ black=BlackIndex(screenNumber);
 
 
 %% Define grating 
-cycles = 2; % spatial frequency (cycles per stimulus)
+cycles = 5; % spatial frequency (cycles per stimulus)
 [w, rect] = Screen('OpenWindow', screenNumber, [0 0 0]);
 HideCursor;
 % make stimulus image
