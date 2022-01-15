@@ -11,6 +11,7 @@ mkdir stimulus
 %% Parameters
 savefile = 1; % 1: save data
 orientation = [0 1 2]; % orientation: 0 for vertical, 1 for horizontal, 2 for both overlapped
+annulus = 1; % 0: no annulus; 1: annulus
 
 dist_scr = 42; % distance from screen (cm)
 radius_gra = 5; % radius of grating circle (deg)
@@ -51,15 +52,21 @@ diameter = tand(V)*D; % cm
 %xysize = rect(4);
 screen_diagonal = sqrt(rect(3)^2 + rect(4)^2);
 xysize = diameter/(2.54/(screen_diagonal/screen_inch));
-xysize_annulus = xysize/2 + 20;
 xylim = 2*pi*cycles;
+
+% annulus
+lineWidth = 25; % outline thickness
+xysize_annulus = xysize/2 + lineWidth;
+ann_rect = [rect(3)/2-xysize_annulus rect(4)/2-xysize_annulus rect(3)/2+xysize_annulus rect(4)/2+xysize_annulus];
+lineColour = [255*0.5 255*0.5 255*0.5]; % outline colour
+
 image_mono_v = zeros(round(xysize),round(xysize),3);
 image_mono_h = zeros(round(xysize),round(xysize),3);
 [x,y] = meshgrid(-xylim:2*xylim/(xysize-1):xylim, ...
     -xylim:2*xylim/(xysize-1):xylim);
 circle = x.^2 + y.^2 <= xylim^2; % circular boundry
 % create gratings
-image_mono_v(:,:,1) = 255; % R channel; 255 is max contrast
+%image_mono_v(:,:,1) = 255; % R channel; 255 is max contrast
 image_mono_v(:,:,1) = (sin(x)+1)/2*cont_l .* circle; % R channel; 255 is max contrast
 %image_mono_v(:,:,2) = (sin(x)+1)/2*cont_l .* circle; % G channel
 %image_mono_v(:,:,3) = (sin(x)+1)/2*cont_l .* circle; % B channel
@@ -96,22 +103,26 @@ filename = [];
 for i = orientation
     if i == 0 % vertical
         Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        %Screen('FillOval', w, [255*0.5 255*0.5 255*0.5], [rect(4)-xysize_annulus rect(3)-xysize_annulus rect(4)+xysize_annulus rect(3)+xysize_annulus]);
         Screen('DrawTexture', w, mono_v)
-        %Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        if annulus == 1
+            Screen('FrameOval', w, lineColour , ann_rect, lineWidth);
+        end
         %Screen('DrawTexture', w, red_filter)
-        Screen('Flip', w); % 画面を更新
+        Screen('Flip', w); % update screen
         if savefile == 1
-            imageArray = Screen('GetImage', w); % 画面全体の色情報を取得
+            imageArray = Screen('GetImage', w); % get colour information of the entire screen
             imwrite(imageArray, 'stimulus/left.png'); 
         end
     elseif i == 1 % horizontal
+        Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         Screen('DrawTexture', w, mono_h)
-        %Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        if annulus == 1
+            Screen('FrameOval', w, lineColour , ann_rect, lineWidth);
+        end
         %Screen('DrawTexture', w, blue_filter)
-        Screen('Flip', w); % 画面を更新
+        Screen('Flip', w); % update screen
         if savefile == 1
-            imageArray = Screen('GetImage', w); % 画面全体の色情報を取得
+            imageArray = Screen('GetImage', w); % get colour information of the entire screen
             imwrite(imageArray, 'stimulus/right.png'); 
         end
     elseif i == 2 % overlapped image
@@ -124,9 +135,9 @@ for i = orientation
         Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         Screen('DrawTexture', w, imagetex_l)
         Screen('DrawTexture', w, imagetex_r)
-        Screen('Flip', w); % 画面を更新
+        Screen('Flip', w); % update screen
         if savefile == 1
-            imageArray = Screen('GetImage', w); % 画面全体の色情報を取得
+            imageArray = Screen('GetImage', w); % get colour information of the entire screen
             imwrite(imageArray, 'stimulus/overlap.png'); 
         end
     end

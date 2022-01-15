@@ -16,9 +16,13 @@ red = [255 0 0];
 blue = [0 0 255];
 HideCursor;
 
+KbName('UnifyKeyNames');
+EscapeKey = KbName('ESCAPE');
+
 %% Parameters
+subj = 'Ryo'; % subject's name
 subj_type = 0; % 0 is human, 1 is monkey
-report = 0; %0 is no report (record only eye-tracking), 1 is report (i.e. record also key pressing)
+report = 1; %0 is no report (record only eye-tracking), 1 is report (i.e. record also key pressing)
 
 fix_size = 0.25; % diameter of a fixation spot (deg)
 %colour_comb = 0; % 0 is (Red Blue), 1 is (Blue Red)
@@ -27,18 +31,30 @@ num_superblock = 5; % the number of super-blocks
 screen_inch = 15.6; % size of the screen (inch)
 dist_scr = 42; % distance from screen (cm)
 
-%% Ask subject's name to output file
-prompt = 'What is the subject''s first name?: ';
-subj = input(prompt,'s');
-if  ischar(subj)
-else
-    !echo Please type only characters.
-    return
+%% Other parameters
+if subj_type == 0 % human
+    trial_len = 2.0; % 2000 ms
+    num_trial = 8;
+    num_triad = 12;
+    rest = 8; % break time (sec) after physical/binocular blocks % 8000 ms
+    brk = 120; % break time (sec) after one super-block 
+    subj_dist = fullfile('recording/human', subj);
+elseif subj_type == 1 % monkey
+    trial_len = 0.8; % 800 ms
+    num_trial = 8;
+    num_triad = 12;
+    subj_dist = fullfile('recording/monkey', subj);
 end
+% shuffle the order of the phys stimuli
+phys_stim = [];
+for i=1:num_trial/2;phys_stim=horzcat(phys_stim,0);end
+for i=1:num_trial/2;phys_stim=horzcat(phys_stim,1);end
 
-subj_dist = fullfile('recording/', subj);
-mkdir(subj_dist, '/report/phys')
-mkdir(subj_dist, '/report/bino')
+%% Create folders
+if report == 1
+    mkdir(subj_dist, '/report/phys')
+    mkdir(subj_dist, '/report/bino')
+end
 
 %% Define fixation point
 % if visual angle is less than 10°, tanV(deg) = S(size of stimulus)/D(distance from screen), i.e. S = D * tanV
@@ -61,23 +77,6 @@ fix_right = [centre(1:1)+fix_d-radius centre(2:2)-radius centre(1:1)+fix_d+radiu
 fix_below = [centre(1:1)-radius centre(2:2)-fix_d-radius centre(1:1)+radius centre(2:2)-fix_d+radius];
 fix_up = [centre(1:1)-radius centre(2:2)+fix_d-radius centre(1:1)+radius centre(2:2)+fix_d+radius];
 potential_loc = [fix_left; fix_right; fix_up; fix_below];
-
-%% define other parameters
-if subj_type == 0 % human
-    trial_len = 2.0; % 2000 ms
-    num_trial = 8;
-    num_triad = 12;
-    rest = 8; % break time (sec) after physical/binocular blocks % 8000 ms
-    brk = 120; % break time (sec) after one super-block 
-elseif subj_type == 1 % monkey
-    trial_len = 0.8; % 800 ms
-    num_trial = 8;
-    num_triad = 12;
-end
-% shuffle the order of the phys stimuli
-phys_stim = [];
-for i=1:num_trial/2;phys_stim=horzcat(phys_stim,0);end
-for i=1:num_trial/2;phys_stim=horzcat(phys_stim,1);end
 
 %% load stimuli
 %{
@@ -119,6 +118,10 @@ for i = 1:num_superblock
     fprintf('Break now... \n')
     [vbl, start] = Screen('Flip', w);
     while (vbl < (brk + start))
+        [keyIsDown, press, KeyCode] = KbCheck;
+        if KeyCode(EscapeKey)==1 
+            break
+        end
         vbl = Screen('Flip', w); % return current time
     end
     

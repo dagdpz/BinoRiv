@@ -29,40 +29,39 @@ for t = 1:num_trial
     
     while (vbl < (t*trial_len + start))
         if phys_stim(t) == 0 % L
-            %Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            Screen('DrawTexture', w, imagetex_l);
+            Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             Screen('FillOval', w, red, fix_loc);
+            Screen('DrawTexture', w, imagetex_l);
         elseif phys_stim(t) == 1 % R
-            %Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            Screen('DrawTexture', w, imagetex_r);
+            Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             Screen('FillOval', w, blue, fix_loc);
+            Screen('DrawTexture', w, imagetex_r);
         end
         vbl = Screen('Flip', w); % return current time
         
+        [keyIsDown, press, KeyCode] = KbCheck;
+        if KeyCode(EscapeKey)==1 
+            break
+        end
         if report == 1
             % Record the time if subject pressed button
-            [keyIsDown, press, KeyCode] = KbCheck;
-            if KeyCode(EscapeKey)==1 
-                break
-            elseif KeyCode(VertKey)==1
+            if KeyCode(VertKey)==1
                 vert_press = vertcat(vert_press, (vbl-start)*1000); % ms
             elseif KeyCode(HorzKey)==1 
                 horz_press = vertcat(horz_press, (vbl-start)*1000); % ms
             end
         end
     end
-    
-    if report == 1
-        vert_press = array2table(vert_press);
-        horz_press = array2table(horz_press);
-        filename = [subj_dist '/report/phys/vertpress_repo_' num2str(superblock) '_' num2str(triad) '_' num2str(t) '.csv'];
-        writetable(vert_press, filename, 'WriteVariableNames', false);
-        filename = [subj_dist '/report/phys/horzpress_repo_' num2str(superblock) '_' num2str(triad) '_' num2str(t) '.csv'];
-        writetable(horz_press, filename, 'WriteVariableNames', false);
-    end
 end
 
 if report == 1
+    vert_press = array2table(vert_press);
+    horz_press = array2table(horz_press);
+    filename = [subj_dist '/report/phys/vertpress_repo_' num2str(superblock) '_' num2str(triad) '.csv'];
+    writetable(vert_press, filename, 'WriteVariableNames', false);
+    filename = [subj_dist '/report/phys/horzpress_repo_' num2str(superblock) '_' num2str(triad) '.csv'];
+    writetable(horz_press, filename, 'WriteVariableNames', false);
+    
     answer = array2table(answer);
     filename = [subj_dist '/report/phys/answer' num2str(superblock) '_' num2str(triad) '.csv'];
     writetable(answer, filename, 'WriteVariableNames', false);

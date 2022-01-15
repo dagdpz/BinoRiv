@@ -42,25 +42,25 @@ for t = 1:num_trial
         
         vbl = Screen('Flip', w); % update screen
         
+        [keyIsDown, press, KeyCode] = KbCheck;
+        if KeyCode(EscapeKey)==1 
+            break
+        end
         if report == 1
             % Record the time if subject pressed button
-            [keyIsDown, press, KeyCode] = KbCheck;
-            if KeyCode(EscapeKey)==1 
-                break
-            elseif KeyCode(VertKey)==1
+             if KeyCode(VertKey)==1
                 vert_press = vertcat(vert_press, (vbl-start)*1000); % ms
             elseif KeyCode(HorzKey)==1 
                 horz_press = vertcat(horz_press, (vbl-start)*1000); % ms
             end
         end
     end
-    
-    if report == 1
-        vert_press = array2table(vert_press);
-        horz_press = array2table(horz_press);
-        filename = [subj_dist '/report/bino/vertpress_repo_' num2str(superblock) '_' num2str(triad) '_' num2str(t) '.csv'];
-        writetable(vert_press, filename, 'WriteVariableNames', false);
-        filename = [subj_dist '/report/bino/horzpress_repo_' num2str(superblock) '_' num2str(triad) '_' num2str(t) '.csv'];
-        writetable(horz_press, filename, 'WriteVariableNames', false);
-    end
+end
+if report == 1
+    vert_press = array2table(vert_press);
+    horz_press = array2table(horz_press);
+    filename = [subj_dist '/report/bino/vertpress_repo_' num2str(superblock) '_' num2str(triad) '.csv'];
+    writetable(vert_press, filename, 'WriteVariableNames', false);
+    filename = [subj_dist '/report/bino/horzpress_repo_' num2str(superblock) '_' num2str(triad) '.csv'];
+    writetable(horz_press, filename, 'WriteVariableNames', false);
 end
