@@ -15,7 +15,7 @@ annulus = 1; % 0: no annulus; 1: annulus
 
 dist_scr = 42; % distance from screen (cm)
 radius_gra = 5; % radius of grating circle (deg)
-cont_l = 255; % contrast intensity [1 255]; 255 is the strongest
+cont_l = 255/2; % contrast intensity [1 255]; 255 is the strongest
 cont_r = 255; % contrast intensity [1 255]; 255 is the strongest
 
 %% Define grating stimulus
