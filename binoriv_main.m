@@ -112,7 +112,7 @@ imagetex_bino = Screen('MakeTexture', w, imdata_bino);
 for i = 1:num_superblock
     
     for j = 1:num_triad
-        phys_bino = 0%randi([0 1],1,1); % if 0 phys->bino, if 1 bino->phys
+        phys_bino = 1%randi([0 1],1,1); % if 0 phys->bino, if 1 bino->phys
         phys_stim = phys_stim(randperm(num_trial)); % shuffle the order of the phys stimuli
         if phys_bino == 0
             binoriv_phys_switch(w,red,blue,i,j,trial_len,num_trial,imagetex_l,imagetex_r,potential_loc,report,phys_stim,subj_dist,EscapeKey);

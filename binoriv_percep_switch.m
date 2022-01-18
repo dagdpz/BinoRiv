@@ -1,5 +1,5 @@
 % Author: Ryo Segawa (whizznihil.kid@gmail.com)
-function binoriv_percep_switch(w,red,blue,superblock,triad,trial_len,num_trial,imagetex_l,imagetex_r,potential_loc,report,subj_dist)
+function binoriv_percep_switch(w,red,blue,superblock,triad,trial_len,num_trial,imagetex_l,imagetex_r,imagetex_bino,potential_loc,report,subj_dist,EscapeKey)
 
 if report == 1
     % Define the key for reporting the content of perception
@@ -37,9 +37,10 @@ for t = 1:num_trial
         Screen('FillOval', w, red, fix_loc_l);
         Screen('FillOval', w, blue, fix_loc_r);
         %stimuli
-        Screen('DrawTexture', w, imagetex_l);
-        Screen('DrawTexture', w, imagetex_r);
-        
+        Screen('DrawTexture', w, imagetex_bino);
+        %Screen('DrawTexture', w, imagetex_l);
+        %Screen('DrawTexture', w, imagetex_r);
+     
         vbl = Screen('Flip', w); % update screen
         
         [keyIsDown, press, KeyCode] = KbCheck;

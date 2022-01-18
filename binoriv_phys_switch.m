@@ -1,5 +1,5 @@
 % Author: Ryo Segawa (whizznihil.kid@gmail.com)
-function binoriv_phys_switch(w,red,blue,superblock,triad,trial_len,num_trial,imagetex_l,imagetex_r,potential_loc,report,phys_stim,subj_dist)
+function binoriv_phys_switch(w,red,blue,superblock,triad,trial_len,num_trial,imagetex_l,imagetex_r,potential_loc,report,phys_stim,subj_dist,EscapeKey)
 
 if report == 1
     % Define the key for reporting the content of perception

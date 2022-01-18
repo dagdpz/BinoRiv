@@ -10,13 +10,13 @@ mkdir stimulus
 
 %% Parameters
 savefile = 1; % 1: save data
-orientation = [0 1 2]; % orientation: 0 for vertical, 1 for horizontal, 2 for both overlapped
+orientation = [0 1 2 3]; % orientation: 0 for vertical, 1 for horizontal, 2 for binocular (you can maximise contrast for both gratings), 3 for overlapped image of 1&2
 annulus = 1; % 0: no annulus; 1: annulus
 
 dist_scr = 42; % distance from screen (cm)
 radius_gra = 5; % radius of grating circle (deg)
-cont_l = 255/2; % contrast intensity [1 255]; 255 is the strongest
-cont_r = 255/2; % contrast intensity [1 255]; 255 is the strongest
+cont_l = 255; % contrast intensity [1 255]; 255 is the strongest
+cont_r = 255; % contrast intensity [1 255]; 255 is the strongest
 
 %% Define grating stimulus
 prompt = 'How many inches is the screen?: ';
@@ -30,8 +30,8 @@ precue = 0.01*16.7*30; %16.7*30=501ms - 16.7ms is reflesh rate.
 AssertOpenGL;
 
 % Get the list of screens and choose the one with the highest screen number.
-screenNumber=max(Screen('Screens'));
-%screenNumber=max(Screen('Screens')-1);
+%screenNumber=max(Screen('Screens'));
+screenNumber=max(Screen('Screens')-1);
 
 % Find the color values which correspond to white and black.
 white=WhiteIndex(screenNumber);
@@ -39,7 +39,7 @@ black=BlackIndex(screenNumber);
 
 
 %% Define grating 
-cycles = 5; % spatial frequency (cycles per stimulus)
+cycles = 2; % spatial frequency (cycles per stimulus)
 [w, rect] = Screen('OpenWindow', screenNumber, [0 0 0]);
 HideCursor;
 % make stimulus image
@@ -62,6 +62,7 @@ lineColour = [255*0.5 255*0.5 255*0.5]; % outline colour
 
 image_mono_v = zeros(round(xysize),round(xysize),3);
 image_mono_h = zeros(round(xysize),round(xysize),3);
+image_bino = zeros(round(xysize),round(xysize),3);
 [x,y] = meshgrid(-xylim:2*xylim/(xysize-1):xylim, ...
     -xylim:2*xylim/(xysize-1):xylim);
 circle = x.^2 + y.^2 <= xylim^2; % circular boundry
@@ -73,12 +74,15 @@ image_mono_v(:,:,1) = (sin(x)+1)/2*cont_l .* circle; % R channel; 255 is max con
 %image_mono_v(:,:,4) = 255*0.5; % alpha chanel (transparency); the drawing destination in perceptual
 %image_mono_h(:,:,1) = (sin(y)+1)/2*cont_r .* circle;
 %image_mono_h(:,:,2) = (sin(y)+1)/2*cont_r .* circle;
-image_mono_h(:,:,3) = 255;
+%image_mono_h(:,:,3) = 255;
 image_mono_h(:,:,3) = (sin(y)+1)/2*cont_r .* circle;
 %image_mono_h(:,:,4) = 255*0.5; % alpha chanel (transparency)
+image_bino(:,:,1) = (sin(x)+1)/2*cont_l .* circle;
+image_bino(:,:,3) = (sin(y)+1)/2*cont_r .* circle;
 
 mono_v = Screen('MakeTexture', w, image_mono_v);
 mono_h = Screen('MakeTexture', w, image_mono_h);
+bino = Screen('MakeTexture', w, image_bino);
 
 red_filter = zeros(rect(4),rect(3),3);
 blue_filter = zeros(rect(4),rect(3),3);
@@ -125,7 +129,19 @@ for i = orientation
             imageArray = Screen('GetImage', w); % get colour information of the entire screen
             imwrite(imageArray, 'stimulus/right.png'); 
         end
-    elseif i == 2 % overlapped image
+    elseif i == 2 % binocular
+        Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        Screen('DrawTexture', w, bino)
+        if annulus == 1
+            Screen('FrameOval', w, lineColour , ann_rect, lineWidth);
+        end
+        %Screen('DrawTexture', w, blue_filter)
+        Screen('Flip', w); % update screen
+        if savefile == 1
+            imageArray = Screen('GetImage', w); % get colour information of the entire screen
+            imwrite(imageArray, 'stimulus/binocular.png'); 
+        end
+    elseif i == 3 % overlapped image
         imdata_l  = imread('stimulus/left.png', 'png'); % vertical corresponds to left
         imdata_l(:,:,4) = 255; % alpha channel
         imdata_r  = imread('stimulus/right.png', 'png'); % horizontal corresponds to right
