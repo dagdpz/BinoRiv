@@ -1,5 +1,6 @@
 % Set Parameters corresponding to your environment and whatever you want
 % Create a stimulus and save as an image file
+% !Currently assuming left:right=red:blue
 % Author: Ryo Segawa (whizznihil.kid@gmail.com)
 
 % Uncomment out in case you want to run screen function, but your pc is not powerful to
@@ -15,8 +16,10 @@ annulus = 1; % 0: no annulus; 1: annulus
 
 dist_scr = 42; % distance from screen (cm)
 radius_gra = 5; % radius of grating circle (deg)
-cont_l = 255/2; % contrast intensity [1 255]; 255 is the strongest
-cont_r = 255; % contrast intensity [1 255]; 255 is the strongest
+max_intensity_l = 255/2; % max contrast intensity [0 255]; 255 is the strongest
+max_intensity_r = 255; 
+bgint_l = 100/2; % min grating contrast intensity [0 255]
+bgint_r = 100; 
 
 %% Define grating stimulus
 prompt = 'How many inches is the screen?: ';
@@ -60,6 +63,7 @@ xysize_annulus = xysize/2 + lineWidth;
 ann_rect = [rect(3)/2-xysize_annulus rect(4)/2-xysize_annulus rect(3)/2+xysize_annulus rect(4)/2+xysize_annulus];
 lineColour = [255*0.5 255*0.5 255*0.5]; % outline colour
 
+% colour of gratings
 image_mono_v = zeros(round(xysize),round(xysize),3);
 image_mono_h = zeros(round(xysize),round(xysize),3);
 image_bino = zeros(round(xysize),round(xysize),3);
@@ -68,17 +72,17 @@ image_bino = zeros(round(xysize),round(xysize),3);
 circle = x.^2 + y.^2 <= xylim^2; % circular boundry
 % create gratings
 %image_mono_v(:,:,1) = 255; % R channel; 255 is max contrast
-image_mono_v(:,:,1) = (sin(x)+1)/2*cont_l .* circle; % R channel; 255 is max contrast
+image_mono_v(:,:,1) = (bgint_l + (sin(x)+1)*(max_intensity_l-bgint_l)/2) .* circle; %(sin(x)+1)/2*max_intensity_l .* circle; % R channel; 255 is max contrast
 %image_mono_v(:,:,2) = (sin(x)+1)/2*cont_l .* circle; % G channel
 %image_mono_v(:,:,3) = (sin(x)+1)/2*cont_l .* circle; % B channel
 %image_mono_v(:,:,4) = 255*0.5; % alpha chanel (transparency); the drawing destination in perceptual
 %image_mono_h(:,:,1) = (sin(y)+1)/2*cont_r .* circle;
 %image_mono_h(:,:,2) = (sin(y)+1)/2*cont_r .* circle;
 %image_mono_h(:,:,3) = 255;
-image_mono_h(:,:,3) = (sin(y)+1)/2*cont_r .* circle;
+image_mono_h(:,:,3) = (bgint_r + (sin(y)+1)*(max_intensity_r-bgint_r)/2) .* circle; %(sin(y)+1)/2*max_intensity_r .* circle;
 %image_mono_h(:,:,4) = 255*0.5; % alpha chanel (transparency)
-image_bino(:,:,1) = (sin(x)+1)/2*cont_l .* circle;
-image_bino(:,:,3) = (sin(y)+1)/2*cont_r .* circle;
+image_bino(:,:,1) = (bgint_l + (sin(x)+1)*(max_intensity_l-bgint_l)/2) .* circle;
+image_bino(:,:,3) = (bgint_r + (sin(y)+1)*(max_intensity_r-bgint_r)/2) .* circle;
 
 mono_v = Screen('MakeTexture', w, image_mono_v);
 mono_h = Screen('MakeTexture', w, image_mono_h);
