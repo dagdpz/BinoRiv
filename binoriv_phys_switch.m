@@ -1,5 +1,5 @@
 % Author: Ryo Segawa (whizznihil.kid@gmail.com)
-function binoriv_phys_switch(w,red,blue,superblock,triad,trial_len,num_trial,imagetex_l,imagetex_r,potential_loc,report,phys_stim,subj_dist,EscapeKey)
+function binoriv_phys_switch(w,red,blue,superblock,triad,trial_len,num_trial,imagetex_l,imagetex_r,potential_loc,report,phys_stim,subj_dist,EscapeKey,lineWidth, ann_rect, lineColour)
 
 if report == 1
     % Define the key for reporting the content of perception
@@ -32,10 +32,12 @@ for t = 1:num_trial
             Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             Screen('FillOval', w, red, fix_loc);
             Screen('DrawTexture', w, imagetex_l);
+            Screen('FrameOval', w, lineColour , ann_rect, lineWidth); % annulus
         elseif phys_stim(t) == 1 % R
             Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             Screen('FillOval', w, blue, fix_loc);
             Screen('DrawTexture', w, imagetex_r);
+            Screen('FrameOval', w, lineColour , ann_rect, lineWidth); % annulus
         end
         vbl = Screen('Flip', w); % return current time
         

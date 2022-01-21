@@ -4,12 +4,17 @@
 clear all
 close all
 
+% delete later
+lineWidth = 25
+ann_rect = [1.480152852272551e+03 7.801528522725514e+02 1.719847147727449e+03 1.019847147727449e+03]
+lineColour = [255 255 255]
+
 % Uncomment out in case you want to run screen function, but your pc is not powerful to run with the error '----- ! PTB - ERROR: SYNCHRONIZATION FAILURE ! ----'
 Screen('Preference', 'SkipSyncTests', 1);
 
 AssertOpenGL;
-%screenNumber=max(Screen('Screens')); % use largest screen if using multiple displays
-screenNumber=max(Screen('Screens')-1);
+screenNumber=max(Screen('Screens')); % use largest screen if using multiple displays
+%screenNumber=max(Screen('Screens')-1);
 
 [w, rect] = Screen('OpenWindow', screenNumber, [0 0 0]);
 white=WhiteIndex(screenNumber); % Find the color values which correspond to white
@@ -29,7 +34,7 @@ fix_size = 0.25; % diameter of a fixation spot (deg)
 %colour_comb = 0; % 0 is (Red Blue), 1 is (Blue Red)
 num_superblock = 1%5; % the number of super-blocks
 
-screen_inch = 15.6; % size of the screen (inch)
+screen_inch = 28%15.6; % size of the screen (inch)
 dist_scr = 42; % distance from screen (cm)
 
 %% Other parameters
@@ -99,7 +104,7 @@ imdata_r = load('stimulus/grating_h','image_mono_h');
 imdata_r = imdata_r.image_mono_h;
 %}
 imdata_l  = imread('stimulus/left.png', 'png'); % vertical corresponds to left
-imdata_l(:,:,4) = 255*0.5; % alpha channel
+imdata_l(:,:,4) = 255*0.5; % alpha channel % image should be lower contrast than FP!
 imdata_r  = imread('stimulus/right.png', 'png'); % horizontal corresponds to right
 imdata_r(:,:,4) = 255*0.5; % alpha channel
 imagetex_l = Screen('MakeTexture', w, imdata_l);
@@ -108,6 +113,10 @@ imdata_bino  = imread('stimulus/binocular.png', 'png'); % binocular image
 imdata_bino(:,:,4) = 255*0.5; % alpha channel
 imagetex_bino = Screen('MakeTexture', w, imdata_bino);
 
+imdata_annulus  = imread('stimulus/annulus.png', 'png'); % annulus
+imagetex_annulus = Screen('MakeTexture', w, imdata_annulus);
+
+
 %% Main
 for i = 1:num_superblock
     
@@ -115,11 +124,27 @@ for i = 1:num_superblock
         phys_bino = 1%randi([0 1],1,1); % if 0 phys->bino, if 1 bino->phys
         phys_stim = phys_stim(randperm(num_trial)); % shuffle the order of the phys stimuli
         if phys_bino == 0
-            binoriv_phys_switch(w,red,blue,i,j,trial_len,num_trial,imagetex_l,imagetex_r,potential_loc,report,phys_stim,subj_dist,EscapeKey);
-            binoriv_percep_switch(w,red,blue,i,j,trial_len,num_trial,imagetex_l,imagetex_r,imagetex_bino,potential_loc,report,subj_dist,EscapeKey);
+            binoriv_phys_switch(w,red,blue,i,j,trial_len,num_trial, ...
+                imagetex_l,imagetex_r, ...
+                potential_loc,report,phys_stim, ...
+                subj_dist,EscapeKey, ...
+                lineWidth, ann_rect, lineColour);
+            binoriv_percep_switch(w,red,blue,i,j,trial_len,num_trial, ...
+                imagetex_l,imagetex_r,imagetex_bino, ...
+                potential_loc,report, ...
+                subj_dist,EscapeKey, ...
+                lineWidth, ann_rect, lineColour);
         elseif phys_bino == 1
-            binoriv_percep_switch(w,red,blue,i,j,trial_len,num_trial,imagetex_l,imagetex_r,imagetex_bino,potential_loc,report,subj_dist,EscapeKey);
-            binoriv_phys_switch(w,red,blue,i,j,trial_len,num_trial,imagetex_l,imagetex_r,potential_loc,report,phys_stim,subj_dist,EscapeKey);
+            binoriv_percep_switch(w,red,blue,i,j,trial_len,num_trial, ...
+                imagetex_l,imagetex_r,imagetex_bino, ...
+                potential_loc,report, ...
+                subj_dist,EscapeKey, ...
+                lineWidth, ann_rect, lineColour);
+            binoriv_phys_switch(w,red,blue,i,j,trial_len,num_trial, ...
+                imagetex_l,imagetex_r, ...
+                potential_loc,report,phys_stim, ...
+                subj_dist,EscapeKey, ...
+                lineWidth, ann_rect, lineColour);
         end
         
         fprintf('Rest now... \n')
