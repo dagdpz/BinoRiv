@@ -6,20 +6,20 @@ close all
 
 % delete later
 lineWidth = 25
-ann_rect = [1.480152852272551e+03 7.801528522725514e+02 1.719847147727449e+03 1.019847147727449e+03]
+ann_rect = [8.328569178319784e+02 4.128569178319784e+02 1.087143082168022e+03 6.671430821680216e+02]
 lineColour = [255 255 255]
 
 % Uncomment out in case you want to run screen function, but your pc is not powerful to run with the error '----- ! PTB - ERROR: SYNCHRONIZATION FAILURE ! ----'
 Screen('Preference', 'SkipSyncTests', 1);
 
 AssertOpenGL;
-screenNumber=max(Screen('Screens')); % use largest screen if using multiple displays
-%screenNumber=max(Screen('Screens')-1);
+%screenNumber=max(Screen('Screens')); % use largest screen if using multiple displays
+screenNumber=max(Screen('Screens')-1);
 
 [w, rect] = Screen('OpenWindow', screenNumber, [0 0 0]);
 white=WhiteIndex(screenNumber); % Find the color values which correspond to white
-red = [255*0.5 0 0];
-blue = [0 0 255];
+red = [96 0 0];
+blue = [0 0 192];
 HideCursor;
 
 KbName('UnifyKeyNames');
@@ -31,10 +31,11 @@ subj_type = 0; % 0 is human, 1 is monkey
 report = 0; %0 is no report (record only eye-tracking), 1 is report (i.e. record also key pressing)
 
 fix_size = 0.25; % diameter of a fixation spot (deg)
+theta = 1.2; % distance of a fixation spot from the centre (deg)
 %colour_comb = 0; % 0 is (Red Blue), 1 is (Blue Red)
 num_superblock = 1%5; % the number of super-blocks
 
-screen_inch = 28%15.6; % size of the screen (inch)
+screen_inch = 15.6; % size of the screen (inch)
 dist_scr = 42; % distance from screen (cm)
 
 %% Other parameters
@@ -82,7 +83,6 @@ xysize = diameter/(2.54/(screen_diagonal/screen_inch)); % 2.54 is cm/inch
 radius = xysize/2; % px
 
 [centre(1), centre(2)] = RectCenter(rect);
-theta = 1; % distance of a fixation spot from the centre (deg)
 fix_d = 2 * dist_scr * tand(theta/2) * (180/pi); % distance of a fixation spot from the centre (rad)
 fix_cent = [centre(1:1)-radius centre(2:2)-radius centre(1:1)+radius centre(2:2)+radius];
 fix_left = [centre(1:1)-fix_d-radius centre(2:2)-radius centre(1:1)-fix_d+radius centre(2:2)+radius];
@@ -104,13 +104,13 @@ imdata_r = load('stimulus/grating_h','image_mono_h');
 imdata_r = imdata_r.image_mono_h;
 %}
 imdata_l  = imread('stimulus/left.png', 'png'); % vertical corresponds to left
-imdata_l(:,:,4) = 255*0.5; % alpha channel % image should be lower contrast than FP!
+%imdata_l(:,:,4) = 255*0.5; % alpha channel % image should be lower contrast than FP!
 imdata_r  = imread('stimulus/right.png', 'png'); % horizontal corresponds to right
-imdata_r(:,:,4) = 255*0.5; % alpha channel
+%imdata_r(:,:,4) = 255*0.5; % alpha channel
 imagetex_l = Screen('MakeTexture', w, imdata_l);
 imagetex_r = Screen('MakeTexture', w, imdata_r);
 imdata_bino  = imread('stimulus/binocular.png', 'png'); % binocular image 
-imdata_bino(:,:,4) = 255*0.5; % alpha channel
+%imdata_bino(:,:,4) = 255*0.5; % alpha channel
 imagetex_bino = Screen('MakeTexture', w, imdata_bino);
 
 imdata_annulus  = imread('stimulus/annulus.png', 'png'); % annulus

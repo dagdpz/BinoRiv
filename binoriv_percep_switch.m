@@ -41,7 +41,18 @@ for t = 1:num_trial
         %Screen('DrawTexture', w, imagetex_annulus); % annulus
         %Screen('DrawTexture', w, imagetex_bino);
         %Screen('DrawTexture', w, imagetex_l);
-%        Screen('DrawTexture', w, imagetex_r);
+        %Screen('DrawTexture', w, imagetex_r);
+        
+        Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [1 0 1 1]);
+        Screen('DrawTexture', w, imagetex_bino);
+        Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [1 0 0 0]);
+        Screen('FillOval', w, red, fix_loc_l);
+        Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [0 0 1 0]);
+        Screen('FillOval', w, blue, fix_loc_r);
+        Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [1 1 1 1]);
+        Screen('FrameOval', w, lineColour , ann_rect, lineWidth); % annulus
+
+        %{
         Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [1 0 0 0]);
         Screen('DrawTexture', w, imagetex_l);
         Screen('FillOval', w, red, fix_loc_l);
@@ -50,6 +61,7 @@ for t = 1:num_trial
         Screen('FillOval', w, blue, fix_loc_r);
         Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [1 1 1 1]);
         Screen('FrameOval', w, lineColour , ann_rect, lineWidth); % annulus
+        %}
              
         vbl = Screen('Flip', w); % update screen
         

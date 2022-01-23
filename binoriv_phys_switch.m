@@ -29,14 +29,16 @@ for t = 1:num_trial
     
     while (vbl < (t*trial_len + start))
         if phys_stim(t) == 0 % L
-            Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            Screen('FillOval', w, red, fix_loc);
+            Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [1 0 0 0]);
             Screen('DrawTexture', w, imagetex_l);
+            Screen('FillOval', w, red, fix_loc);
+            Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [1 1 1 1]);
             Screen('FrameOval', w, lineColour , ann_rect, lineWidth); % annulus
         elseif phys_stim(t) == 1 % R
-            Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            Screen('FillOval', w, blue, fix_loc);
+            Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [0 0 1 0]);
             Screen('DrawTexture', w, imagetex_r);
+            Screen('FillOval', w, blue, fix_loc);
+            Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [1 1 1 1]);
             Screen('FrameOval', w, lineColour , ann_rect, lineWidth); % annulus
         end
         vbl = Screen('Flip', w); % return current time

@@ -13,7 +13,7 @@ mkdir stimulus
 %% Parameters
 savefile = 1; % 1: save data
 orientation = [0 1 2 3]; % orientation: 0 for vertical, 1 for horizontal, 2 for binocular (you can maximise contrast for both gratings), 3 for overlapped image of 1&2
-annulus = 0; % 0: no annulus; 1: annulus
+annulus = 1; % 0: no annulus; 1: annulus
 annulus_save = 1;
 photos = 0; % 0: no photos overlayed; 1: photos overlayed
 
@@ -21,10 +21,12 @@ photos = 0; % 0: no photos overlayed; 1: photos overlayed
 dist_scr = 42; % distance from screen (cm)
 radius_gra = 5; % radius of grating circle (deg)
 max_intensity_l = 255/2; % max contrast intensity [0 255]; 255 is the strongest
-max_intensity_r = 255; 
+max_intensity_r = 255/1; 
 bgint_l = 0/2; % min grating contrast intensity [0 255]
 bgint_r = 0; 
 cycles = 2; % spatial frequency (cycles per stimulus)
+phase_l = 20.5; %5 % 20.5: FP on grating; 5: FP on background
+phase_r = 20.5; %5 % 20.5: FP on grating; 5: on background
 
 
 %% Define grating stimulus
@@ -39,8 +41,8 @@ precue = 0.01*16.7*30; %16.7*30=501ms - 16.7ms is reflesh rate.
 AssertOpenGL;
 
 % Get the list of screens and choose the one with the highest screen number.
-screenNumber=max(Screen('Screens'));
-%screenNumber=max(Screen('Screens')-1);
+%screenNumber=max(Screen('Screens'));
+screenNumber=max(Screen('Screens')-1);
 
 % Find the color values which correspond to white and black.
 white=WhiteIndex(screenNumber);
@@ -77,17 +79,17 @@ image_bino = zeros(round(xysize),round(xysize),3);
 circle = x.^2 + y.^2 <= xylim^2; % circular boundry
 % create gratings
 %image_mono_v(:,:,1) = 255; % R channel; 255 is max contrast
-image_mono_v(:,:,1) =  (bgint_l + (sin(x)+1)*(max_intensity_l-bgint_l)/2) .* circle; %(sin(x)+1)/2*max_intensity_l .* circle; % R channel; 255 is max contrast
+image_mono_v(:,:,1) =  (bgint_l + (sin(x+phase_l)+1)*(max_intensity_l-bgint_l)/2) .* circle; %(sin(x)+1)/2*max_intensity_l .* circle; % R channel; 255 is max contrast
 %image_mono_v(:,:,2) = (sin(x)+1)/2*cont_l .* circle; % G channel
 %image_mono_v(:,:,3) = (sin(x)+1)/2*cont_l .* circle; % B channel
 %image_mono_v(:,:,4) = 255*0.5; % alpha chanel (transparency); the drawing destination in perceptual
 %image_mono_h(:,:,1) = (sin(y)+1)/2*cont_r .* circle;
 %image_mono_h(:,:,2) = (sin(y)+1)/2*cont_r .* circle;
 %image_mono_h(:,:,3) = 255;
-image_mono_h(:,:,3) = (bgint_r + (sin(y)+1)*(max_intensity_r-bgint_r)/2) .* circle; %(sin(y)+1)/2*max_intensity_r .* circle;
+image_mono_h(:,:,3) = (bgint_r + (sin(y+phase_r)+1)*(max_intensity_r-bgint_r)/2) .* circle; %(sin(y)+1)/2*max_intensity_r .* circle;
 %image_mono_h(:,:,4) = 255*0.5; % alpha chanel (transparency)
-image_bino(:,:,1) = (bgint_l + (sin(x)+1)*(max_intensity_l-bgint_l)/2) .* circle;
-image_bino(:,:,3) = (bgint_r + (sin(y)+1)*(max_intensity_r-bgint_r)/2) .* circle;
+image_bino(:,:,1) = (bgint_l + (sin(x+phase_l)+1)*(max_intensity_l-bgint_l)/2) .* circle;
+image_bino(:,:,3) = (bgint_r + (sin(y+phase_r)+1)*(max_intensity_r-bgint_r)/2) .* circle;
 Screen('FillOval', w, [255/2 0 0], [1.5915*1000 0.8495*1000    1.6085*1000    0.8665*1000]);
 Screen('FillOval', w, [0 0 255], [1633.5 891.5 1650.5 908.5]);
 
