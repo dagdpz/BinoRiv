@@ -5,9 +5,9 @@ clear all
 close all
 
 % delete later
-lineWidth = 25
-ann_rect = [8.328569178319784e+02 4.128569178319784e+02 1.087143082168022e+03 6.671430821680216e+02]
-lineColour = [255 255 255]
+lineWidth = 15
+ann_rect = 1.0e+03 *[1.1665    0.6065    1.3935    0.8335]
+lineColour = [0 0 0]
 
 % Uncomment out in case you want to run screen function, but your pc is not powerful to run with the error '----- ! PTB - ERROR: SYNCHRONIZATION FAILURE ! ----'
 Screen('Preference', 'SkipSyncTests', 1);
@@ -18,8 +18,8 @@ screenNumber=max(Screen('Screens')-1);
 
 [w, rect] = Screen('OpenWindow', screenNumber, [0 0 0]);
 white=WhiteIndex(screenNumber); % Find the color values which correspond to white
-red = [96 0 0];
-blue = [0 0 192];
+red = [51.9588 0 0];
+blue = [0 0 153];
 HideCursor;
 
 KbName('UnifyKeyNames');
@@ -30,18 +30,18 @@ subj = 'Ryo'; % subject's name
 subj_type = 0; % 0 is human, 1 is monkey
 report = 0; %0 is no report (record only eye-tracking), 1 is report (i.e. record also key pressing)
 
-fix_size = 0.25; % diameter of a fixation spot (deg)
-theta = 1.2; % distance of a fixation spot from the centre (deg)
+fix_size = 0.15%0.25; % diameter of a fixation spot (deg)
+theta = 1.0; % distance of a fixation spot from the centre (deg)
 %colour_comb = 0; % 0 is (Red Blue), 1 is (Blue Red)
 num_superblock = 1%5; % the number of super-blocks
 
-screen_inch = 15.6; % size of the screen (inch)
+screen_inch = 24; % size of the screen (inch)
 dist_scr = 42; % distance from screen (cm)
 
 %% Other parameters
 if subj_type == 0 % human
     trial_len = 2.0; % 2000 ms
-    num_trial = 8;
+    num_trial = 20%8;
     num_triad = 6%12;
     rest = 0%8; % break time (sec) after physical/binocular blocks % 8000 ms
     brk = 0%120; % break time (sec) after one super-block 
@@ -140,11 +140,11 @@ for i = 1:num_superblock
                 potential_loc,report, ...
                 subj_dist,EscapeKey, ...
                 lineWidth, ann_rect, lineColour);
-            binoriv_phys_switch(w,red,blue,i,j,trial_len,num_trial, ...
-                imagetex_l,imagetex_r, ...
-                potential_loc,report,phys_stim, ...
-                subj_dist,EscapeKey, ...
-                lineWidth, ann_rect, lineColour);
+            %binoriv_phys_switch(w,red,blue,i,j,trial_len,num_trial, ...
+             %   imagetex_l,imagetex_r, ...
+              %  potential_loc,report,phys_stim, ...
+               % subj_dist,EscapeKey, ...
+                %lineWidth, ann_rect, lineColour);
         end
         
         fprintf('Rest now... \n')

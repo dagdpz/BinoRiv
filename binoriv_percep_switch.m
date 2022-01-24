@@ -25,7 +25,10 @@ end
 for t = 1:num_trial
 %    [vbl, start] = Screen('Flip', w); % do not Flip here; otherwise the screen will flicker.
     fix_loc_l = potential_loc(fix_loc_label(1,t),:);
-    fix_loc_r = potential_loc(fix_loc_label(2,t),:); 
+    fix_loc_r = potential_loc(fix_loc_label(2,t),:);
+    fix_loc_l(:,1:2:3) = fix_loc_l(:,1:2:3)*1.01
+    fix_loc_l(:,2:2:4) = fix_loc_l(:,2:2:4)*1.03
+    fix_loc_r(:,1:2:3) = fix_loc_r(:,1:2:3)*0.995
     if report == 1
         vert_press = [];
         horz_press = [];

@@ -20,13 +20,14 @@ photos = 0; % 0: no photos overlayed; 1: photos overlayed
 % grating related
 dist_scr = 42; % distance from screen (cm)
 radius_gra = 5; % radius of grating circle (deg)
-max_intensity_l = 255/2; % max contrast intensity [0 255]; 255 is the strongest
+% https://en.wikipedia.org/wiki/Relative_luminance
+max_intensity_l = 86.598%255/2; % max contrast intensity [0 255]; 255 is the strongest
 max_intensity_r = 255/1; 
 bgint_l = 0/2; % min grating contrast intensity [0 255]
 bgint_r = 0; 
 cycles = 2; % spatial frequency (cycles per stimulus)
-phase_l = 20.5; %5 % 20.5: FP on grating; 5: FP on background
-phase_r = 20.5; %5 % 20.5: FP on grating; 5: on background
+phase_l = -0.65; %5 % 20.5: FP on grating; 5: FP on background
+phase_r = 20.5; %5 % 20.5: FP on grating; 5: FP on background
 
 
 %% Define grating stimulus
@@ -65,7 +66,7 @@ xysize = diameter/(2.54/(screen_diagonal/screen_inch));
 xylim = 2*pi*cycles;
 
 % annulus
-lineWidth = 25; % outline thickness
+lineWidth = 15; % outline thickness
 xysize_annulus = xysize/2 + lineWidth;
 ann_rect = [rect(3)/2-xysize_annulus rect(4)/2-xysize_annulus rect(3)/2+xysize_annulus rect(4)/2+xysize_annulus];
 lineColour = [255 255 255]; % outline colour
@@ -114,6 +115,7 @@ end
 %}
 
 %% Load face and object images
+%{
 face = imread('stimulus/face.jpg');
 objA = imread('stimulus/objectA.jpg');
 
@@ -126,6 +128,7 @@ objA(:,:,1) = 0;
 objA(:,:,2) = 0;
 image_face = Screen('MakeTexture', w, face);
 image_objA = Screen('MakeTexture', w, objA);
+%}
 
 %% Save images
 [vbl, start] = Screen('Flip', w);
