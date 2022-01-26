@@ -5,21 +5,18 @@ clear all
 close all
 
 % delete later
-[lineWidth, ann_rect, lineColour] = binoriv_stimulus();
+[max_intensity_l, max_intensity_r, lineWidth, ann_rect, lineColour] = binoriv_stimulus();
 
 % Uncomment out in case you want to run screen function, but your pc is not powerful to run with the error '----- ! PTB - ERROR: SYNCHRONIZATION FAILURE ! ----'
 Screen('Preference', 'SkipSyncTests', 1);
 
 AssertOpenGL;
-%screenNumber=max(Screen('Screens')); % use largest screen if using multiple displays
-screenNumber=max(Screen('Screens')-1);
+screenNumber=max(Screen('Screens')); % use largest screen if using multiple displays
+%screenNumber=max(Screen('Screens')-1);
 
 [w, rect] = Screen('OpenWindow', screenNumber, [0 0 0]);
 white=WhiteIndex(screenNumber); % Find the color values which correspond to white
-% colour intensity of the fixation points; luminance contrast is defined as
-% luminance difference/average difference = (https://en.m.wikipedia.org/wiki/Contrast_(vision))
-red = [51.9588 0 0];
-blue = [0 0 153];
+
 HideCursor;
 
 KbName('UnifyKeyNames');
@@ -33,12 +30,15 @@ report = 0; %0 is no report (record only eye-tracking), 1 is report (i.e. record
 fix_size = 0.15%0.25; % diameter of a fixation spot (deg)
 theta = 1.0; % distance of a fixation spot from the centre (deg)
 %colour_comb = 0; % 0 is (Red Blue), 1 is (Blue Red)
-num_superblock = 1%5; % the number of super-blocks
+% Contrast of the fixed point to the maximum luminance of the grating; luminance contrast is defined as Weber contrast (https://en.m.wikipedia.org/wiki/Contrast_(vision))
+% contrast = (intensity of FP - intensity of background)/ intensity of background 
+contrast = -0.5; % [-1.0 1.0]; e.g. -0.5 means luminance of 50% to the maximum luminance of the grating
 
 screen_inch = 24; % size of the screen (inch)
 dist_scr = 42; % distance from screen (cm)
 
-%% Other parameters
+%% duration-related parameters
+num_superblock = 1%5; % the number of super-blocks
 if subj_type == 0 % human
     trial_len = 2.0; % 2000 ms
     num_trial = 20%8;
@@ -46,12 +46,6 @@ if subj_type == 0 % human
     rest = 0%8; % break time (sec) after physical/binocular blocks % 8000 ms
     brk = 0%120; % break time (sec) after one super-block 
     subj_dist = fullfile('recording/human', subj);
-elseif subj_type == 0 % human
-    trial_len = 8; % 2000 ms
-    num_trial = 8; % block
-    num_triad = 1; % 12 blocks
-    rest = 8; % break time (sec) after physical/binocular blocks % 8000 ms
-    brk = 2; % 120 break time (sec) after one super-block
 elseif subj_type == 1 % monkey
     trial_len = 0.8; % 800 ms
     num_trial = 8;
@@ -71,6 +65,14 @@ if report == 1
 end
 
 %% Define fixation point
+% intensity of the fixation points
+red_intensity = luminance(contrast, "red", max_intensity_l, max_intensity_r);
+red = [red_intensity 0 0]; 
+%red = [51.9588 0 0];
+blue_intensity = luminance(contrast, "blue", max_intensity_l, max_intensity_r);
+blue = [0 0 blue_intensity];
+%blue = [0 0 153];
+
 % if visual angle is less than 10°, tanV(deg) = S(size of stimulus)/D(distance from screen), i.e. S = D * tanV
 D = dist_scr;   % viewing distance (cm)
 V = fix_size; % radius of grating circle (deg)
@@ -170,3 +172,13 @@ end
 
 ShowCursor;
 Screen('Close',w);
+
+
+function [I_fx] = luminance(contrast, colour, max_intensity_l, max_intensity_r)
+    if colour == "red"
+        I_gr = max_intensity_l;
+    elseif colour == "blue"
+        I_gr = max_intensity_r;
+    end
+    I_fx = I_gr*(2+contrast)/(2-contrast);
+end

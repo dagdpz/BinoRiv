@@ -2,7 +2,7 @@
 % Create a stimulus and save as an image file
 % !Currently assuming left:right=red:blue
 % Author: Ryo Segawa (whizznihil.kid@gmail.com)
-function [lineWidth, ann_rect, lineColour] = binoriv_stimulus()
+function [max_intensity_l, max_intensity_r, lineWidth, ann_rect, lineColour] = binoriv_stimulus()
 
 % Uncomment out in case you want to run screen function, but your pc is not powerful to
 % run with the error '----- ! PTB - ERROR: SYNCHRONIZATION FAILURE ! ----'
@@ -43,8 +43,8 @@ precue = 0.01*16.7*30; %16.7*30=501ms - 16.7ms is reflesh rate.
 AssertOpenGL;
 
 % Get the list of screens and choose the one with the highest screen number.
-%screenNumber=max(Screen('Screens'));
-screenNumber=max(Screen('Screens')-1);
+screenNumber=max(Screen('Screens'));
+%screenNumber=max(Screen('Screens')-1);
 
 % Find the color values which correspond to white and black.
 white=WhiteIndex(screenNumber);
