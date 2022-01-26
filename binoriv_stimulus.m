@@ -2,7 +2,7 @@
 % Create a stimulus and save as an image file
 % !Currently assuming left:right=red:blue
 % Author: Ryo Segawa (whizznihil.kid@gmail.com)
-%function [lineWidth, xysize_annulus, ann_rect, lineColour] = binoriv_stimulus()
+function [lineWidth, ann_rect, lineColour] = binoriv_stimulus()
 
 % Uncomment out in case you want to run screen function, but your pc is not powerful to
 % run with the error '----- ! PTB - ERROR: SYNCHRONIZATION FAILURE ! ----'
@@ -20,10 +20,11 @@ photos = 0; % 0: no photos overlayed; 1: photos overlayed
 % grating related
 dist_scr = 42; % distance from screen (cm)
 radius_gra = 5; % radius of grating circle (deg)
-% https://en.wikipedia.org/wiki/Relative_luminance
-max_intensity_l = 86.598%255/2; % max contrast intensity [0 255]; 255 is the strongest
-max_intensity_r = 255/1; 
-bgint_l = 0/2; % min grating contrast intensity [0 255]
+% grating's max intensity: defined based on maxmising blue's intensity
+% (https://en.wikipedia.org/wiki/Relative_luminance)
+max_intensity_l = 86.598;%255/2; % max contrast intensity [0 255]; 255 is the strongest
+max_intensity_r = 255; 
+bgint_l = 0; % min grating contrast intensity [0 255]
 bgint_r = 0; 
 cycles = 2; % spatial frequency (cycles per stimulus)
 phase_l = -0.65; %5 % 20.5: FP on grating; 5: FP on background
@@ -91,8 +92,6 @@ image_mono_h(:,:,3) = (bgint_r + (sin(y+phase_r)+1)*(max_intensity_r-bgint_r)/2)
 %image_mono_h(:,:,4) = 255*0.5; % alpha chanel (transparency)
 image_bino(:,:,1) = (bgint_l + (sin(x+phase_l)+1)*(max_intensity_l-bgint_l)/2) .* circle;
 image_bino(:,:,3) = (bgint_r + (sin(y+phase_r)+1)*(max_intensity_r-bgint_r)/2) .* circle;
-Screen('FillOval', w, [255/2 0 0], [1.5915*1000 0.8495*1000    1.6085*1000    0.8665*1000]);
-Screen('FillOval', w, [0 0 255], [1633.5 891.5 1650.5 908.5]);
 
 mono_v = Screen('MakeTexture', w, image_mono_v);
 mono_h = Screen('MakeTexture', w, image_mono_h);
@@ -146,7 +145,6 @@ end
 for i = orientation
     if i == 0 % vertical
         Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-          [mx, my]=RectCenter(rect);
         Screen('DrawTexture', w, mono_v)
         if photos == 1 
             Screen('DrawTexture', w, image_face)

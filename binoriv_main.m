@@ -5,9 +5,7 @@ clear all
 close all
 
 % delete later
-lineWidth = 15
-ann_rect = 1.0e+03 *[1.1665    0.6065    1.3935    0.8335]
-lineColour = [0 0 0]
+[lineWidth, ann_rect, lineColour] = binoriv_stimulus();
 
 % Uncomment out in case you want to run screen function, but your pc is not powerful to run with the error '----- ! PTB - ERROR: SYNCHRONIZATION FAILURE ! ----'
 Screen('Preference', 'SkipSyncTests', 1);
@@ -18,6 +16,8 @@ screenNumber=max(Screen('Screens')-1);
 
 [w, rect] = Screen('OpenWindow', screenNumber, [0 0 0]);
 white=WhiteIndex(screenNumber); % Find the color values which correspond to white
+% colour intensity of the fixation points; luminance contrast is defined as
+% luminance difference/average difference = (https://en.m.wikipedia.org/wiki/Contrast_(vision))
 red = [51.9588 0 0];
 blue = [0 0 153];
 HideCursor;
