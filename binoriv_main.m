@@ -4,11 +4,13 @@
 clear all
 close all
 
+global SETTINGS
+
 % delete later
 [max_intensity_l, max_intensity_r, lineWidth, ann_rect, lineColour] = binoriv_stimulus();
 
 % Uncomment out in case you want to run screen function, but your pc is not powerful to run with the error '----- ! PTB - ERROR: SYNCHRONIZATION FAILURE ! ----'
-Screen('Preference', 'SkipSyncTests', 1);
+%Screen('Preference', 'SkipSyncTests', 1);
 
 AssertOpenGL;
 screenNumber=max(Screen('Screens')); % use largest screen if using multiple displays
@@ -125,6 +127,11 @@ for i = 1:num_superblock
     for j = 1:num_triad
         phys_bino = 1%randi([0 1],1,1); % if 0 phys->bino, if 1 bino->phys
         phys_stim = phys_stim(randperm(num_trial)); % shuffle the order of the phys stimuli
+        SETTINGS.durTrialMax = trial_len; % trial duration [s]
+        SETTINGS.fsMatlab = 1000; % matlab "sampling" frequency [Hz]
+        SETTINGS.bufferSize = SETTINGS.durTrialMax * SETTINGS.fsMatlab;
+        SETTINGS.dyn.memoryBuffer = single(nan(SETTINGS.bufferSize,11)); % Initialise a buffer for [t,x,y]; dyn - timing and acquisition info, changing from state to state
+        
         if phys_bino == 0
             binoriv_phys_switch(w,red,blue,i,j,trial_len,num_trial, ...
                 imagetex_l,imagetex_r, ...

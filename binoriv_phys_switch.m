@@ -16,7 +16,14 @@ answer = [];
 [vbl, start] = Screen('Flip', w);
 for t = 1:num_trial
 %    [vbl, start] = Screen('Flip', w); % do not Flip here; otherwise the screen will flicker.
-    fix_loc = potential_loc(fix_loc_label(1,t),:);
+    fix_loc = potential_loc(fix_loc_label(1,t),:)
+    if phys_stim(t) == 0 % L
+        fix_loc(:,1:2:3) = fix_loc(:,1:2:3)*1.01
+        fix_loc(:,2:2:4) = fix_loc(:,2:2:4)*1.03
+    elseif phys_stim(t) == 1 % R
+        fix_loc(:,1:2:3) = fix_loc(:,1:2:3)*0.995
+    end
+    
     if report == 1
         vert_press = [];
         horz_press = [];

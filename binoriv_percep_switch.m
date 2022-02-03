@@ -80,6 +80,8 @@ for t = 1:num_trial
                 horz_press = vertcat(horz_press, (vbl-start)*1000); % ms
             end
         end
+        [x_eye y_eye] = aux_GetCalibratedEyeHandPos('percep');
+        dyn.memoryBuffer(dyn.counterLine,:) = [vbl-start,t,x_eye,y_eye];
     end
 end
 if report == 1
