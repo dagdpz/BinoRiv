@@ -68,10 +68,10 @@ end
 
 %% Define fixation point
 % intensity of the fixation points
-red_intensity = luminance(contrast, "red", max_intensity_l, max_intensity_r);
+red_intensity = luminance(contrast, 'red', max_intensity_l, max_intensity_r);
 red = [red_intensity 0 0]; 
 %red = [51.9588 0 0];
-blue_intensity = luminance(contrast, "blue", max_intensity_l, max_intensity_r);
+blue_intensity = luminance(contrast, 'blue', max_intensity_l, max_intensity_r);
 blue = [0 0 blue_intensity];
 %blue = [0 0 153];
 
@@ -182,9 +182,9 @@ Screen('Close',w);
 
 
 function [I_fx] = luminance(contrast, colour, max_intensity_l, max_intensity_r)
-    if colour == "red"
+    if strcmp(colour, 'red')
         I_gr = max_intensity_l;
-    elseif colour == "blue"
+    elseif strcmp(colour, 'blue')
         I_gr = max_intensity_r;
     end
     I_fx = I_gr*(2+contrast)/(2-contrast);
