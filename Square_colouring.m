@@ -1,4 +1,4 @@
-function Square_coloring(PX, colour, PY, Bace )
+function Square_coloring(PX, colour, PY, Bace)
 hold on;
 
 xlimit = get(gca, 'XLim');                                                  

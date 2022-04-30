@@ -1,79 +1,140 @@
 % Author: Ryo Segawa (whizznihil.kid@gmail.com)
-function binoriv_phys_switch(w,red,blue,superblock,triad,trial_len,num_trial,imagetex_l,imagetex_r,potential_loc,report,phys_stim,subj_dist,EscapeKey,lineWidth, ann_rect, lineColour)
+function binoriv_phys_switch(w,superblock,triad)
 
-if report == 1
+global VAR
+
+if VAR.eye_track == 1
+    durTrialMax = VAR.trial_len; % max trial duration [s]
+    fsMatlab = 1000; % matlab "sampling" frequency [Hz]
+    bufferSize = durTrialMax * fsMatlab;
+    memoryBuffer_fixloc = []; % [fix_loc]
+    memoryBuffer_eyepos = []; % buffer data: [time trial x_eye y_eye]
+    memoryBuffer_eyesize = []; % buffer data: [time trial width hight]
+    counter = 0;
+end
+    
+if VAR.report == 1
     % Define the key for reporting the content of perception
     KbName('UnifyKeyNames');
-    EscapeKey = KbName('ESCAPE');
     VertKey = KbName('UpArrow');
     HorzKey = KbName('LeftArrow');
+    
+    vert_press = [];
+    horz_press = [];
+    pre_VertKey = 0;
+    pre_HorzKey = 0;
 end
 
-fix_loc_label = randi([1 4],1,num_trial);
+fix_loc_label = randi([1 4],1,VAR.num_trial);
 answer = [];
 
-% animation
+%% animation
 [vbl, start] = Screen('Flip', w);
-for t = 1:num_trial
-%    [vbl, start] = Screen('Flip', w); % do not Flip here; otherwise the screen will flicker.
-    fix_loc = potential_loc(fix_loc_label(1,t),:)
-    if phys_stim(t) == 0 % L
-        fix_loc(:,1:2:3) = fix_loc(:,1:2:3)*1.01
-        fix_loc(:,2:2:4) = fix_loc(:,2:2:4)*1.03
-    elseif phys_stim(t) == 1 % R
-        fix_loc(:,1:2:3) = fix_loc(:,1:2:3)*0.995
-    end
-    
-    if report == 1
-        vert_press = [];
-        horz_press = [];
-        if phys_stim(t) == 0 % L
-            answer = vertcat(answer, 'L');
-        elseif phys_stim(t) == 1 % R
-            answer = vertcat(answer, 'R');
+for t = 1:VAR.num_trial
+    if VAR.grating_task == 1
+        if VAR.phys_stim(t) == 1 % Right
+            fix_loc = VAR.potential_loc_grat(fix_loc_label(1,t),:);
+        else %Left
+            fix_loc = VAR.potential_loc(fix_loc_label(1,t),:);
         end
+    else
+        fix_loc = VAR.potential_loc(fix_loc_label(1,t),:);
     end
     
-    while (vbl < (t*trial_len + start))
-        if phys_stim(t) == 0 % L
-            Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [1 0 0 0]);
-            Screen('DrawTexture', w, imagetex_l);
-            Screen('FillOval', w, red, fix_loc);
-            Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [1 1 1 1]);
-            Screen('FrameOval', w, lineColour , ann_rect, lineWidth); % annulus
-        elseif phys_stim(t) == 1 % R
-            Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [0 0 1 0]);
-            Screen('DrawTexture', w, imagetex_r);
-            Screen('FillOval', w, blue, fix_loc);
-            Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [1 1 1 1]);
-            Screen('FrameOval', w, lineColour , ann_rect, lineWidth); % annulus
+    
+    if VAR.phys_stim(t) == 0 % L
+        answer = vertcat(answer, 'L');
+    elseif VAR.phys_stim(t) == 1 % R
+        answer = vertcat(answer, 'R');
+    end
+
+    while (vbl < (t*VAR.trial_len + start))
+        if VAR.phys_stim(t) == 0 % L
+            if VAR.grating_task == 1
+                Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [1 0 0 0]);
+                Screen('DrawTexture', w, VAR.imagetex_l);
+                Screen('FillOval', w, VAR.red, fix_loc);
+                Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [1 1 1 1]);
+                Screen('FrameOval', w, VAR.lineColour , VAR.ann_rect, VAR.lineWidth); % annulus
+            else
+                Screen('FillOval', w, VAR.red, fix_loc);
+            end
+        elseif VAR.phys_stim(t) == 1 % R
+            if VAR.grating_task == 1
+                Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [0 0 1 0]);
+                Screen('DrawTexture', w, VAR.imagetex_r);
+                Screen('FillOval', w, VAR.blue, fix_loc);
+                Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [1 1 1 1]);
+                Screen('FrameOval', w, VAR.lineColour , VAR.ann_rect, VAR.lineWidth); % annulus
+            else
+                Screen('FillOval', w, VAR.blue, fix_loc);
+            end
         end
         vbl = Screen('Flip', w); % return current time
         
         [keyIsDown, press, KeyCode] = KbCheck;
-        if KeyCode(EscapeKey)==1 
+        if KeyCode(VAR.EscapeKey)==1 
             break
         end
-        if report == 1
+        if VAR.report == 1
             % Record the time if subject pressed button
-            if KeyCode(VertKey)==1
+            if KeyCode(VertKey)==1 && pre_VertKey==0
+                pre_VertKey = 1;
                 vert_press = vertcat(vert_press, (vbl-start)*1000); % ms
-            elseif KeyCode(HorzKey)==1 
+            elseif KeyCode(VertKey)==0 && pre_VertKey==1
+                pre_VertKey = 0;
+                vert_press = vertcat(vert_press, (vbl-start)*1000); % ms
+            elseif KeyCode(HorzKey)==1 && pre_HorzKey==0
+                pre_HorzKey = 1;
+                horz_press = vertcat(horz_press, (vbl-start)*1000); % ms
+            elseif KeyCode(HorzKey)==0 && pre_HorzKey==1
+                pre_HorzKey = 0;
                 horz_press = vertcat(horz_press, (vbl-start)*1000); % ms
             end
+        end
+        if VAR.eye_track == 1
+            [x_eye, y_eye] = aux_GetCalibratedEyeHandPos();
+            [width,hight] = vpx_GetPupilSize();
+            counter = counter + 1;
+            %memoryBuffer_fixloc(counter,1:4) = fix_loc;
+            memoryBuffer_fixloc(counter,1) = fix_loc_label(1,t);
+            memoryBuffer_eyepos(counter,1) = (vbl-start)*1000;
+            memoryBuffer_eyepos(counter,2) = t;
+            memoryBuffer_eyepos(counter,3) = x_eye;
+            memoryBuffer_eyepos(counter,4) = y_eye;
+            memoryBuffer_eyesize(counter,1) = (vbl-start)*1000;
+            memoryBuffer_eyesize(counter,2) = t;
+            memoryBuffer_eyesize(counter,3) = width;
+            memoryBuffer_eyesize(counter,4) = hight;
+            %memoryBuffer_eyepos(counter,:) = [(vbl-start)*1000,t,x_eye,y_eye];
+            %memoryBuffer_eyesize(counter,:) = [(vbl-start)*1000,t,width,hight];
         end
     end
 end
 
-if report == 1
+%% save
+if VAR.report == 1
     vert_press = array2table(vert_press);
     horz_press = array2table(horz_press);
-    filename = [subj_dist '/report/phys/vertpress_repo_' num2str(superblock) '_' num2str(triad) '.csv'];
+    filename = [VAR.subj_dist '/report/phys/vertpress_repo_' num2str(superblock) '_' num2str(triad) '.csv'];
     writetable(vert_press, filename, 'WriteVariableNames', false);
-    filename = [subj_dist '/report/phys/horzpress_repo_' num2str(superblock) '_' num2str(triad) '.csv'];
+    filename = [VAR.subj_dist '/report/phys/horzpress_repo_' num2str(superblock) '_' num2str(triad) '.csv'];
     writetable(horz_press, filename, 'WriteVariableNames', false);
-    
     answer = array2table(answer);
-    filename = [subj_dist '/report/phys/answer' num2str(superblock) '_' num2str(triad) '.csv'];
+    filename = [VAR.subj_dist '/report/phys/answer_' num2str(superblock) '_' num2str(triad) '.csv'];
     writetable(answer, filename, 'WriteVariableNames', false);
+end
+
+
+
+if VAR.eye_track == 1
+    filename = [VAR.subj_dist '/report/phys/fixloc_' num2str(superblock) '_' num2str(triad) '.csv'];
+    buffer = array2table(memoryBuffer_fixloc);
+    writetable(buffer, filename, 'WriteVariableNames', false);
+    filename = [VAR.subj_dist '/report/phys/eyepos_' num2str(superblock) '_' num2str(triad) '.csv'];
+    buffer = array2table(memoryBuffer_eyepos);
+    writetable(buffer, filename, 'WriteVariableNames', false);
+    filename = [VAR.subj_dist '/report/phys/eyesize_' num2str(superblock) '_' num2str(triad) '.csv'];
+    buffer = array2table(memoryBuffer_eyesize);
+    writetable(buffer, filename, 'WriteVariableNames', false);
 end

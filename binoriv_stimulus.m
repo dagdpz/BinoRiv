@@ -1,8 +1,9 @@
 % Set Parameters corresponding to your environment and whatever you want
 % Create a stimulus and save as an image file
-% !Currently assuming left:right=red:blue
 % Author: Ryo Segawa (whizznihil.kid@gmail.com)
 function [max_intensity_l, max_intensity_r, lineWidth, ann_rect, lineColour] = binoriv_stimulus()
+
+global VAR
 
 % Uncomment out in case you want to run screen function, but your pc is not powerful to
 % run with the error '----- ! PTB - ERROR: SYNCHRONIZATION FAILURE ! ----'
@@ -11,32 +12,41 @@ Screen('Preference', 'SkipSyncTests', 1);
 mkdir stimulus
 
 %% Parameters
+screen_inch = 27; % screen size (inch)
+screen_width = 61-1.4;
+screen_hight = 33.7;
 savefile = 1; % 1: save data
-orientation = [0 1 2 3]; % orientation: 0 for vertical, 1 for horizontal, 2 for binocular (you can maximise contrast for both gratings), 3 for overlapped image of 1&2
+orientation = [0 1 2 3 4]; % orientation: 0 for vertical, 1 for horizontal, 2 for binocular (you can maximise contrast for both gratings), 3 for overlapped image of 1&2
 annulus = 1; % 0: no annulus; 1: annulus
 annulus_save = 1;
 photos = 0; % 0: no photos overlayed; 1: photos overlayed
+subj = 'Luba_0412';
 
-% grating related
-dist_scr = 42; % distance from screen (cm)
-radius_gra = 5; % radius of grating circle (deg)
-% grating's max intensity: defined based on maxmising blue's intensity
+% grating-related
+dist_scr = 47; % distance from screen (cm)
+diameter_gra = 10%5; % diameter of grating circle (deg)
+sf = 0.5%2; % spatial frequency (cycle/degree)
+%num_cycle = 10; % spatial frequency (cycles/stimulus)% grating's max intensity: defined based on maxmising blue's intensity
 % (https://en.wikipedia.org/wiki/Relative_luminance)
-max_intensity_l = 86.598;%255/2; % max contrast intensity [0 255]; 255 is the strongest
-max_intensity_r = 255; 
-bgint_l = 0; % min grating contrast intensity [0 255]
-bgint_r = 0; 
-cycles = 2; % spatial frequency (cycles per stimulus)
-phase_l = -0.65; %5 % 20.5: FP on grating; 5: FP on background
-phase_r = 20.5; %5 % 20.5: FP on grating; 5: FP on background
-
-
-%% Define grating stimulus
-prompt = 'How many inches is the screen?: ';
-screen_inch = input(prompt);
-
-GratDurationSecs = 2; % Abort demo after x seconds.
-precue = 0.01*16.7*30; %16.7*30=501ms - 16.7ms is reflesh rate.
+path_luminance_l = ['stimulus/' subj '/luminance_l_' subj '.mat'];
+try path_luminance_r = ['stimulus/' subj '/luminance_r_' subj '.mat']; catch; end
+if exist(path_luminance_l, 'file') == 2 && exist(path_luminance_r, 'file') == 2 
+    max_intensity_l = load(path_luminance_l);
+    max_intensity_r = load(path_luminance_r);
+    max_intensity_l = 150%max_intensity_l.max_intensity_l;
+    max_intensity_r = 255%max_intensity_r.max_intensity_r;
+else
+    max_blue_intensity = 150;
+    max_intensity_l = 0.3396*max_blue_intensity; % max contrast intensity [0 255]; 255 is the strongest
+    max_intensity_r = max_blue_intensity; 
+end
+%gtline_width_l = 0%0.8*max_intensity_l;
+%gtline_width_r = 0%0.8*max_intensity_r;
+bgint_l = 0;%0.7*max_intensity_l; % min grating contrast intensity [0 255]
+bgint_r = 0;%0.7*max_intensity_r; 
+phase = (1/2)*pi;
+phase_l = phase;%20.5; % 20.5: FP on grating; 4.5: FP on background for cycle=2
+phase_r = phase;%20.5%4.6 %20.5: FP on grating; 4.5: FP on background for cycle=2
 
 
 %%
@@ -46,38 +56,40 @@ AssertOpenGL;
 screenNumber=max(Screen('Screens'));
 %screenNumber=max(Screen('Screens')-1);
 
-% Find the color values which correspond to white and black.
-white=WhiteIndex(screenNumber);
-black=BlackIndex(screenNumber);
-
 
 %% Define grating 
 [w, rect] = Screen('OpenWindow', screenNumber, [0 0 0]);
 HideCursor;
 % make stimulus image
-% if visual angle is less than 10°, tanV(deg) = S(size of
-% stimulus)/D(distance from screen), i.e. S = D * tanV
+% if visual angle is less than 10°, tanV(deg) = S(size of stimulus)/D(distance from screen), i.e. S = D * tanV
 D = dist_scr;   % viewing distance (cm)
-V = radius_gra; % radius of grating circle (deg)
-diameter = tand(V)*D; % cm
-% from cm to px
-%xysize = rect(4);
-screen_diagonal = sqrt(rect(3)^2 + rect(4)^2);
-xysize = diameter/(2.54/(screen_diagonal/screen_inch));
-xylim = 2*pi*cycles;
+V = diameter_gra; % diameter of grating circle (deg)
+diameter = 2*D * tand(V/2);%tand(V)*D % cm
+% from cm to px:
+VAR.width_pxpercm = rect(3)/screen_width;
+hight_cxpercm = rect(4)/screen_hight;
+xysize = diameter * VAR.width_pxpercm; % px
+%adj = 2*radius_gra/num_cycle; % in case the unit of spatial frequency is cycles/stimulus
+cycles = sf * diameter_gra; % in case the unit of spatial frequency is cycles/degree
+%cycles = radius_gra/adj;%3.8; % in case the unit of spatial frequency is cycles/stimulus
+xylim = pi*cycles;
 
 % annulus
 lineWidth = 15; % outline thickness
 xysize_annulus = xysize/2 + lineWidth;
 ann_rect = [rect(3)/2-xysize_annulus rect(4)/2-xysize_annulus rect(3)/2+xysize_annulus rect(4)/2+xysize_annulus];
 lineColour = [255 255 255]; % outline colour
-
+                
 % colour of gratings
 image_mono_v = zeros(round(xysize),round(xysize),3);
 image_mono_h = zeros(round(xysize),round(xysize),3);
-image_bino = zeros(round(xysize),round(xysize),3);
+image_bino = zeros(round(xysize),round(xysize),3); % spatial freq depends on the size of stimulus
+image_bino_ind = zeros(rect(4),rect(4),3); % spatial freq is NOT dependent on the size of stimulus
+image_mask = zeros(rect(4),rect(4),3);
 [x,y] = meshgrid(-xylim:2*xylim/(round(xysize)-1):xylim, ...
     -xylim:2*xylim/(round(xysize)-1):xylim);
+%[x,y] = meshgrid(-xylim:2*xylim/(rect(4)-1):xylim, ...
+ %   -xylim:2*xylim/(rect(4)-1):xylim);
 circle = x.^2 + y.^2 <= xylim^2; % circular boundry
 % create gratings
 %image_mono_v(:,:,1) = 255; % R channel; 255 is max contrast
@@ -90,12 +102,23 @@ image_mono_v(:,:,1) =  (bgint_l + (sin(x+phase_l)+1)*(max_intensity_l-bgint_l)/2
 %image_mono_h(:,:,3) = 255;
 image_mono_h(:,:,3) = (bgint_r + (sin(y+phase_r)+1)*(max_intensity_r-bgint_r)/2) .* circle; %(sin(y)+1)/2*max_intensity_r .* circle;
 %image_mono_h(:,:,4) = 255*0.5; % alpha chanel (transparency)
+%image_bino(:,:,1) = (bgint_l + (sin(x+phase_l)+1)*(max_intensity_l-bgint_l-gtline_width_l)/2+gtline_width_l) .* circle;
+%image_bino(:,:,3) = (bgint_r + (sin(y+phase_r)+1)*(max_intensity_r-bgint_r-gtline_width_r)/2+gtline_width_r) .* circle;
 image_bino(:,:,1) = (bgint_l + (sin(x+phase_l)+1)*(max_intensity_l-bgint_l)/2) .* circle;
 image_bino(:,:,3) = (bgint_r + (sin(y+phase_r)+1)*(max_intensity_r-bgint_r)/2) .* circle;
+
+
+%{
+image_bino_ind(:,:,1) = (sin(x_ind)+1)/2*max_intensity_l .* circle; 
+image_bino_ind(:,:,3) = (sin(y_ind)+1)/2*max_intensity_r .* circle;
+image_mask(:,:,:) = 255;
+%}
 
 mono_v = Screen('MakeTexture', w, image_mono_v);
 mono_h = Screen('MakeTexture', w, image_mono_h);
 bino = Screen('MakeTexture', w, image_bino);
+%bino = Screen('MakeTexture', w, image_bino_ind);
+%mask = Screen('MakeTexture', w, image_mask);
 
 red_filter = zeros(rect(4),rect(3),3);
 blue_filter = zeros(rect(4),rect(3),3);
@@ -129,6 +152,13 @@ image_face = Screen('MakeTexture', w, face);
 image_objA = Screen('MakeTexture', w, objA);
 %}
 
+
+%% pick up coordinates at max value of gratings 
+VAR.wave_length = (xysize/(cycles));
+VAR.wave_length_half = VAR.wave_length/2;
+VAR.x_cent = rect(3)/2;
+VAR.y_cent = rect(4)/2;
+
 %% Save images
 [vbl, start] = Screen('Flip', w);
 
@@ -149,7 +179,7 @@ for i = orientation
         if photos == 1 
             Screen('DrawTexture', w, image_face)
         end
-        %Screen('FillOval', w, [255/2 0 0], [1.5915*1000 0.8495*1000    1.6085*1000    0.8665*1000]);
+        %Screen('FillOval', w, [51.9588 0 0], 1.0e+03 *[1.5702    0.8967    1.5769    0.9033]);
         if annulus == 1
             Screen('FrameOval', w, lineColour , ann_rect, lineWidth);
         end
@@ -165,7 +195,7 @@ for i = orientation
         if photos == 1
             Screen('DrawTexture', w, image_objA)
         end
-        %Screen('FillOval', w, [0 0 255], [1633.5 891.5 1650.5 908.5]);
+        %Screen('FillOval', w, [0 0 153], 1.0e+03 *[1.5887    0.8547    1.5953    0.8613]);
         if annulus == 1
             Screen('FrameOval', w, lineColour , ann_rect, lineWidth);
         end
@@ -178,6 +208,20 @@ for i = orientation
     elseif i == 2 % binocular
         Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         Screen('DrawTexture', w, bino)
+        
+        %{
+        Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [1 0 0 0]);
+        Screen('FillOval', w, [255 0 0], [1229.48551330144	716.486706422681	1236.51210045608	723.513293577319]);
+        Screen('FillOval', w, [255 0 0], [1323.48789954392	716.486706422681	1330.51448669856	723.513293577319]);
+        Screen('FillOval', w, [255 0 0], [1276.48670642268	763.487899543919	1283.51329357732	770.514486698558]);
+        Screen('FillOval', w, [255 0 0], [1276.48670642268	669.485513301442	1283.51329357732	676.512100456081]);
+        %
+        Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [0 0 1 0]);
+        Screen('FillOval', w, [0 0 255], [924.665900601040	551.165900601040	928.728240338313	555.228240338313]);
+        Screen('FillOval', w, [0 0 255], [1006.66590060104	660.165900601040	1010.72824033831	664.228240338313]);
+        Screen('FillOval', w, [0 0 255], [924.665900601040	660.165900601040	928.728240338313	664.228240338313]);
+        %Screen('FillOval', w, [0 0 255], [1006.66590060104	551.165900601040	1010.72824033831	555.228240338313]);
+        %}
         if photos == 1
             face(:,:,4) = 255;
             objA(:,:,4) = 255*0.5;
@@ -186,6 +230,7 @@ for i = orientation
             Screen('DrawTexture', w, image_face)
             Screen('DrawTexture', w, image_objA)
         end
+        
         if annulus == 1
             Screen('FrameOval', w, lineColour , ann_rect, lineWidth);
         end
@@ -210,11 +255,38 @@ for i = orientation
             imageArray = Screen('GetImage', w); % get colour information of the entire screen
             imwrite(imageArray, 'stimulus/overlap.png'); 
         end
+        
+    elseif i == 4 % debug
+        imdata_l(:,:,4) = 255; % alpha channel
+        imdata_r(:,:,4) = 255; % alpha channel
+        imagetex_l = Screen('MakeTexture', w, imdata_l);
+        imagetex_r = Screen('MakeTexture', w, imdata_r);
+        %
+        Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [1 0 0 0]);
+        Screen('DrawTexture', w, imagetex_l)
+        %Screen('FillOval', w, [0 0 0], [1229.48551330144	716.486706422681	1236.51210045608	723.513293577319]);
+        Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [0 0 1 0]);
+        Screen('DrawTexture', w, imagetex_r)
+        %Screen('FillOval', w, [0 0 0], [1276.48670642268	669.485513301442	1283.51329357732	676.512100456081]);
+        Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, [1 1 1 0]);
+%        FP = max_loc(1,3)
+        Screen('FillOval', w, [255 255 255], [rect(3)/2-5 rect(4)/2-5 rect(3)/2+5 rect(4)/2+5]);
+        wave_length = (xysize/(cycles*2));
+        Screen('FillOval', w, [255 255 255], [rect(3)/2-wave_length-3 rect(4)/2-wave_length-3 rect(3)/2-wave_length+3 rect(4)/2-wave_length+3]);
+        %Screen('FillOval', w, [255 255 255], [VAR.image_left_edge+max_loc_index-3 VAR.image_top_edge+max_loc_index-3 VAR.image_left_edge+max_loc_index+3 VAR.image_top_edge+max_loc_index+3]);
+        %Screen('FillOval', w, [255 0 0], fix_upleft_l);
+        %Screen('FillOval', w, [0 0 255], fix_upleft_r);
+        Screen('Flip', w); % update screen
+        if savefile == 1
+            imageArray = Screen('GetImage', w); % get colour information of the entire screen
+            imwrite(imageArray, 'stimulus/debug.png'); 
+        end
     end
 end
  
+
 Screen('DrawingFinished', w); % Tell PTB that no further drawing commands will follow before Screen('Flip')
 % The same commands wich close onscreen and offscreen windows also close textures.
 sca;
 
-fprintf('Well done! \n')
+fprintf('Stimuli created! \n')

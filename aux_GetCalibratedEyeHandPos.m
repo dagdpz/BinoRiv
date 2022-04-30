@@ -1,11 +1,19 @@
-function [x_eye y_eye x_hnd y_hnd touching sen1 sen2 sen3 sen4] = aux_GetCalibratedEyeHandPos(task)
+%function [x_eye y_eye x_hnd y_hnd touching sen1 sen2 sen3 sen4] = aux_GetCalibratedEyeHandPos()
+function [x_eye, y_eye] = aux_GetCalibratedEyeHandPos()
+
 global IO SETTINGS
 global SETTINGS
 global STATE
 global IO
 
-vd = 42;
-eye_offset_x=0;eye_offset_y=0;eye_gain_x=1;eye_gain_y=1;
+SETTINGS.vd = 47;
+SETTINGS.useMouse = 0; 
+SETTINGS.useVPacq = 1; % 1: allow ViewPoint toolbox
+SETTINGS.useViewAPI = 0; % enable SMI eye position acquisition
+SETTINGS.useParallel = 0;
+SETTINGS.ai = 0;
+SETTINGS.touchscreen = 0;
+SETTINGS.UseMouseAsTouch = 0;
 
 %% Initialize eyetracker
 if SETTINGS.useVPacq && ~SETTINGS.useMouse && ~libisloaded('vpx');
@@ -45,7 +53,7 @@ elseif SETTINGS.useViewAPI && ~SETTINGS.useMouse
     get(pAccuracyData, 'Value')
 end
 
-%{
+
 if SETTINGS.useParallel
     sen = double(get_sensors_state(SETTINGS.pp,SETTINGS.sensor_pins));
     sen1 = sen(1);
@@ -64,18 +72,18 @@ else
     sen3 = 1;
     sen4 = 1;
 end
-%}
 
-%{
+
+
 if SETTINGS.ai
     data = getsample(IO.ai);
 else
     data=NaN;
 end
-%}
 
-[x_eye y_eye] = aux_GetCalibratedEyePos(task);
-[x_hnd y_hnd touching] = aux_GetCalibratedHndPos(data, task);
+
+[x_eye,y_eye] = aux_GetCalibratedEyePos();
+[x_hnd y_hnd touching] = aux_GetCalibratedHndPos(data);
 
 if SETTINGS.ai && strcmp(SETTINGS.Motion_detection_interface,'DAQ')
     sen3 = data(IO.jaw)  >= 5;
@@ -84,13 +92,27 @@ end
 
 
 %% get raw eye position (from 0 to 1 in ViewPoint "camera field of view")
-function [x,y] = aux_GetCalibratedEyePos(task)
+function [x,y] = aux_GetCalibratedEyePos()
 global SETTINGS
+global PATH
+global VAR
+
+
+%% eye calibration
+%{
+if exist([PATH.calibpath filesep 'last_eyecal.mat'],'file'),
+    disp(['Found previous eye calibation in ' PATH.calibpath filesep 'last_eyecal.mat']);
+    load([PATH.calibpath filesep 'last_eyecal.mat']);
+else
+    fprintf('Have not been calibrated! \n')
+    pause
+end
+%}
 
 if SETTINGS.useVPacq
     [x,y]=vpx_GetGazePointSmoothed;
-    x = eye_gain_x*x + eye_offset_x;
-    y = eye_gain_y*y + eye_offset_y;
+    x = VAR.eye_gain_x*x + VAR.eye_offset_x;
+    y = VAR.eye_gain_y*y + VAR.eye_offset_y;
     % arcs
     x = atan(x*30/SETTINGS.vd*pi/180)*180/pi;
     y = atan(y*30/SETTINGS.vd*pi/180)*180/pi;
@@ -124,7 +146,7 @@ end
 
 
 %% get hand position (from 0 to 1)
-function [x,y, touching] = aux_GetCalibratedHndPos(data, task)
+function [x,y, touching] = aux_GetCalibratedHndPos(data)
 global SETTINGS
 
 if SETTINGS.touchscreen && SETTINGS.ai
