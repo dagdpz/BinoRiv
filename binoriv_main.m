@@ -38,17 +38,17 @@ SETTINGS.screen_w_deg = 2*atan((SETTINGS.screen_w_cm/2)/SETTINGS.vd)/(pi/180);
 SETTINGS.matlab_version = datevec(version('-date'));
 
 %% Parameters
-VAR.subj = 'test'; % subject's name
+VAR.subj = 'test_0517'; % subject's name
 VAR.subj_type = 0; % 0 is human, 1 is monkey
-VAR.report = 1; % 0 is no report, 1 is report (i.e. record key pressing)
+VAR.report = 0; % 0 is no report, 1 is report (i.e. record key pressing)
 VAR.eye_track = 0; % 0: eye tracker on, 1: eye tracker off
 VAR.grating_task = 1; % 0 if real task, 1 if background is only grating 
 
-fix_size = 0.2;%0.25; % diameter of a fixation spot (deg)
+fix_size = 0.2%0.2; % diameter of a fixation spot (deg)
 FP_loc = 1; % 0: fixed distance (theta) from the centre, 1: FP onto non-grating-overlapped place, 2: FP onto grating-overlapped place
-distfromcent = 1; % Distance of the fixed point from the centreline (number of gratings) %integer
+distfromcent = 1; % integer
 theta = 1.0; % distance of a fixation spot from the centre (deg)
-colour_comb = 2; % 0 is (left:Red right:Blue), 1 is (left:Blue right:Red)
+colour_comb = 1; % 0 is (left:Red right:Blue), 1 is (left:Blue right:Red)
 % Contrast of the fixed point to the maximum luminance of the grating; luminance contrast is defined as Weber contrast (https://en.m.wikipedia.org/wiki/Contrast_(vision))
 % contrast = (intensity of FP - intensity of background)/ intensity of background 
 contrast = -0.5; % [-1.0 1.0]; e.g. -0.5 means luminance of 50% to the maximum luminance of the grating
@@ -63,7 +63,7 @@ num_superblock = 1%5; % the number of super-blocks
 if VAR.subj_type == 0 % human
     VAR.trial_len = 2.0; % 2000 ms
     VAR.num_trial = 8;
-    num_triad = 6;
+    num_triad = 12;
     rest = 0%8; % break time (sec) after physical/binocular blocks % 8000 ms
     brk = 0%120; % break time (sec) after one super-block 
     VAR.subj_dist = fullfile('recording/human', VAR.subj);
@@ -196,6 +196,10 @@ for i = 1:num_superblock
         phys_bino = 1%randi([0 1],1,1); % if 0 phys->bino, if 1 bino->phys
         VAR.phys_stim = VAR.phys_stim(randperm(VAR.num_trial)); % shuffle the order of the phys stimuli
        
+        % Drift correction
+        drift_corr(w, rect, radius)
+%         if VAR.eye_track == 1; drift_corr(w, rect, radius); end
+        % Switches
         if phys_bino == 0
             binoriv_phys_switch(w,i,j);
             binoriv_percep_switch(w,i,j);
