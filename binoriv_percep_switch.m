@@ -27,7 +27,9 @@ if VAR.report == 1
 end
 
 % make binocular fixation spots so that they cannot overlap at one location
+%
 fix_loc_label = randi([1 4],2,VAR.num_trial);
+
 if VAR.grating_task == 1
     for i=1:VAR.num_trial
         if fix_loc_label(1,i) == 1; while fix_loc_label(2,i) == 1 || fix_loc_label(2,i) == 4; fix_loc_label(2,i) = randi([1 4],1,1); end; end
@@ -45,13 +47,37 @@ else
         end
     end
 end
+%
 
+%{
+fix_loc_label = randi([1 2],2,VAR.num_trial);
+if VAR.grating_task == 1
+    for i=1:VAR.num_trial
+        if fix_loc_label(1,i) == 1; fix_loc_label(2,i) = 2; end
+        if fix_loc_label(1,i) == 2; fix_loc_label(2,i) = 1; end
+    end
+else
+    for i=1:VAR.num_trial
+        if fix_loc_label(1,i) == fix_loc_label(2,i)
+            while fix_loc_label(1,i) == fix_loc_label(2,i)
+                fix_loc_label(1,i) = randi([1 2],1,1);
+                fix_loc_label(2,i) = randi([1 2],1,1);
+            end
+        end
+    end
+end
+%}
 %% animation
 [vbl, start] = Screen('Flip', w);
+% for online plotting
+if VAR.eye_track == 1; figure('Name','Online GUI','Position',SETTINGS.GUI_coordinates,'Renderer', 'Painters'); axis([-5 5 -5 5]); axis square; grid on; hold on; end 
+% main loop
 for t = 1:VAR.num_trial
-    fix_loc_l = VAR.potential_loc(fix_loc_label(1,t),:);
+%     fix_loc_l = VAR.potential_loc(fix_loc_label(1,t),:);
+    fix_loc_l = VAR.potential_loc(1,:);
     if VAR.grating_task == 1
-        fix_loc_r = VAR.potential_loc_grat(fix_loc_label(2,t),:);
+%        fix_loc_r = VAR.potential_loc_grat(fix_loc_label(2,t),:);
+        fix_loc_r = VAR.potential_loc_grat(2,:);
     else
         fix_loc_r = VAR.potential_loc(fix_loc_label(2,t),:);
     end
@@ -127,41 +153,21 @@ for t = 1:VAR.num_trial
             memoryBuffer_eyesize(counter,3) = width;
             memoryBuffer_eyesize(counter,4) = hight;
 
-            %{
-            % Open graphics ("GUIs")
-            GUI_fig_handle = figure('Name','Online GUI','Position',SETTINGS.GUI_coordinates,'Renderer', 'Painters');
-            set(gca,'Ylim',[-SETTINGS.screen_lh_deg SETTINGS.screen_uh_deg],'Xlim',[-SETTINGS.screen_w_deg/2 SETTINGS.screen_w_deg/2],'XLimMode','manual','YLimMode','manual');
-            if SETTINGS.matlab_version(1)>=2014
-                dyn.eye_position_handle = line(-1000,-1000,'Color','r','Marker','o','XlimInclude','off','YLimInclude','off');%'background');
-                dyn.hnd_position_handle = line(-1000,-1000,'Color','g','Marker','o','XlimInclude','off','YLimInclude','off');%,'background');
-            else
-                dyn.eye_position_handle = line(-1000,-1000,'Color','r','Marker','o','XlimInclude','off','YLimInclude','off','EraseMode','xor');%'background');
-                dyn.hnd_position_handle = line(-1000,-1000,'Color','g','Marker','o','XlimInclude','off','YLimInclude','off','EraseMode','xor');%,'background');
+            
+            % Online plot
+            try 
+                x_eye_pre = memoryBuffer_eyepos(counter-1,3);
+                y_eye_pre = memoryBuffer_eyepos(counter-1,4);
+                line([x_eye_pre x_eye], [y_eye_pre y_eye], 'Color','k','Marker','none','LineWidth',0.2)
+            catch
             end
-            hold on; drawnow;
-
-            % Draw GUI
-            dyn.correct_choice_target = trial(dyn.trialNumber).task.correct_choice_target;
-            dyn.hnd_color=nanmean([task.hnd.fix.color_bright],1);
-            if SETTINGS.GUI
-                set(0, 'currentfigure', GUI_fig_handle);
-                ang=0:0.02:2*pi;
-                %aux_draw_GUI_targets(dyn,trial,eff,pha,ang)
-                aux_draw_GUI_targets(dyn,trial,'eye','fix',ang)
-                aux_draw_GUI_targets(dyn,trial,'eye','fi2',ang)
-                aux_draw_GUI_targets(dyn,trial,'eye','tar',ang)
-                aux_draw_GUI_targets(dyn,trial,'eye','ta2',ang)
-                aux_draw_GUI_targets(dyn,trial,'eye','cue',ang)
-                aux_draw_GUI_targets(dyn,trial,'hnd','fix',ang)
-                aux_draw_GUI_targets(dyn,trial,'hnd','fi2',ang)
-                aux_draw_GUI_targets(dyn,trial,'hnd','tar',ang)
-                aux_draw_GUI_targets(dyn,trial,'hnd','ta2',ang)
-                aux_draw_GUI_targets(dyn,trial,'hnd','cue',ang)
-                if any(~isnan(task.hnd.fix.color_bright))
-                    set(dyn.hnd_position_handle,'Color',nanmean([task.hnd.fix.color_bright],1)/255);
-                end
-            end
-            %}
+            drawnow
+        end
+        if VAR.eye_track == 1
+            filename = [VAR.fig_dir '/reco_online_bino_' num2str(superblock) '_' num2str(triad) '_' num2str(t) '.png'];
+            saveas(gcf,filename)
+            filename = [VAR.fig_dir '/reco_online_bino_' num2str(superblock) '_' num2str(triad) '_' num2str(t) '.fig'];
+            saveas(gcf,filename)
         end
     end
 end
@@ -177,13 +183,25 @@ if VAR.report == 1
 end
     
 if VAR.eye_track == 1
-    filename = [VAR.subj_dist '/report/bino/fixloc_' num2str(superblock) '_' num2str(triad) '.csv'];
-    buffer = array2table(memoryBuffer_fixloc);
-    writetable(buffer, filename, 'WriteVariableNames', false);
-    filename = [VAR.subj_dist '/report/bino/eyepos_' num2str(superblock) '_' num2str(triad) '.csv'];
-    buffer = array2table(memoryBuffer_eyepos);
-    writetable(buffer, filename, 'WriteVariableNames', false);
-    filename = [VAR.subj_dist '/report/bino/eyesize_' num2str(superblock) '_' num2str(triad) '.csv'];
-    buffer = array2table(memoryBuffer_eyesize);
-    writetable(buffer, filename, 'WriteVariableNames', false);
+    if VAR.report == 1
+        filename = [VAR.subj_dist '/report/bino/fixloc_' num2str(superblock) '_' num2str(triad) '.csv'];
+        buffer = array2table(memoryBuffer_fixloc);
+        writetable(buffer, filename, 'WriteVariableNames', false);
+        filename = [VAR.subj_dist '/report/bino/eyepos_' num2str(superblock) '_' num2str(triad) '.csv'];
+        buffer = array2table(memoryBuffer_eyepos);
+        writetable(buffer, filename, 'WriteVariableNames', false);
+        filename = [VAR.subj_dist '/report/bino/eyesize_' num2str(superblock) '_' num2str(triad) '.csv'];
+        buffer = array2table(memoryBuffer_eyesize);
+        writetable(buffer, filename, 'WriteVariableNames', false);
+    else
+        filename = [VAR.repo_dir '/phys/fixloc_' num2str(superblock) '_' num2str(triad) '.csv'];
+        buffer = array2table(memoryBuffer_fixloc);
+        writetable(buffer, filename, 'WriteVariableNames', false);
+        filename = [VAR.repo_dir '/phys/eyepos_' num2str(superblock) '_' num2str(triad) '.csv'];
+        buffer = array2table(memoryBuffer_eyepos);
+        writetable(buffer, filename, 'WriteVariableNames', false);
+        filename = [VAR.repo_dir '/phys/eyesize_' num2str(superblock) '_' num2str(triad) '.csv'];
+        buffer = array2table(memoryBuffer_eyesize);
+        writetable(buffer, filename, 'WriteVariableNames', false);
+    end
 end

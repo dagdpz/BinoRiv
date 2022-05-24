@@ -9,14 +9,15 @@ global PATH
 global SETTINGS
 
 % delete later
+VAR.subj = 'Ryo_0524_DC'; % subject's name
 [max_intensity_l, max_intensity_r, VAR.lineWidth, VAR.ann_rect, VAR.lineColour] = binoriv_stimulus();
 
 % Uncomment out in case you want to run screen function, but your pc is not powerful to run with the error '----- ! PTB - ERROR: SYNCHRONIZATION FAILURE ! ----'
 %Screen('Preference', 'SkipSyncTests', 1);
 
 AssertOpenGL;
-screenNumber=max(Screen('Screens')); % use largest screen if using multiple displays
-%screenNumber=max(Screen('Screens')-1);
+%screenNumber=max(Screen('Screens')); % use largest screen if using multiple displays
+screenNumber=max(Screen('Screens')-1);
 
 [w, rect] = Screen('OpenWindow', screenNumber, [0 0 0]);
 white=WhiteIndex(screenNumber); % Find the color values which correspond to white
@@ -35,18 +36,22 @@ SETTINGS.screen_uh_cm = SETTINGS.screen_h_cm/2;
 SETTINGS.screen_lh_deg = atan((SETTINGS.screen_h_cm - SETTINGS.screen_uh_cm)/SETTINGS.vd)/(pi/180);
 SETTINGS.screen_uh_deg = atan(SETTINGS.screen_uh_cm/SETTINGS.vd)/(pi/180);
 SETTINGS.screen_w_deg = 2*atan((SETTINGS.screen_w_cm/2)/SETTINGS.vd)/(pi/180);
+SETTINGS.screen_h_deg       = SETTINGS.screen_lh_deg + SETTINGS.screen_uh_deg;
 SETTINGS.matlab_version = datevec(version('-date'));
 
+% Online GUI-related
+SETTINGS.GUI_coordinates = [-2000 200 2000 2000*rect(4)/rect(3)];
+
 %% Parameters
-VAR.subj = 'test_0517'; % subject's name
+VAR.subj = 'Ryo_0524_DC'; % subject's name
 VAR.subj_type = 0; % 0 is human, 1 is monkey
-VAR.report = 0; % 0 is no report, 1 is report (i.e. record key pressing)
-VAR.eye_track = 0; % 0: eye tracker on, 1: eye tracker off
+VAR.report = 1; % 0 is no report, 1 is report (i.e. record key pressing)
+VAR.eye_track = 1; % 0: eye tracker on, 1: eye tracker off
 VAR.grating_task = 1; % 0 if real task, 1 if background is only grating 
 
-fix_size = 0.2%0.2; % diameter of a fixation spot (deg)
+fix_size = 0.2; % diameter of a fixation spot (deg)
 FP_loc = 1; % 0: fixed distance (theta) from the centre, 1: FP onto non-grating-overlapped place, 2: FP onto grating-overlapped place
-distfromcent = 1; % integer
+distfromcent = 2; % integer
 theta = 1.0; % distance of a fixation spot from the centre (deg)
 colour_comb = 1; % 0 is (left:Red right:Blue), 1 is (left:Blue right:Red)
 % Contrast of the fixed point to the maximum luminance of the grating; luminance contrast is defined as Weber contrast (https://en.m.wikipedia.org/wiki/Contrast_(vision))
@@ -85,10 +90,17 @@ for i=1:VAR.num_trial/2;VAR.phys_stim=horzcat(VAR.phys_stim,1);end
 if VAR.report == 0
     mkdir(VAR.subj_dist, '/noreport/phys')
     mkdir(VAR.subj_dist, '/noreport/bino')
+    VAR.norepo_dir = [VAR.subj_dist '/noreport'];
+    VAR.fig_dir = [VAR.norepo_dir '/figures'];
+    mkdir(VAR.fig_dir)
 elseif VAR.report == 1    
     mkdir(VAR.subj_dist, '/report/phys')
     mkdir(VAR.subj_dist, '/report/bino')
+    VAR.repo_dir = [VAR.subj_dist '/report'];
+    VAR.fig_dir = [VAR.repo_dir '/figures'];
+    mkdir(VAR.fig_dir)
 end
+
 
 %% Define fixation point
 % intensity of the fixation points
@@ -197,8 +209,7 @@ for i = 1:num_superblock
         VAR.phys_stim = VAR.phys_stim(randperm(VAR.num_trial)); % shuffle the order of the phys stimuli
        
         % Drift correction
-        drift_corr(w, rect, radius)
-%         if VAR.eye_track == 1; drift_corr(w, rect, radius); end
+        if VAR.eye_track == 1; drift_corr(w, rect, radius, i, j); end
         % Switches
         if phys_bino == 0
             binoriv_phys_switch(w,i,j);

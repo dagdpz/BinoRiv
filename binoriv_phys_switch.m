@@ -2,6 +2,7 @@
 function binoriv_phys_switch(w,superblock,triad)
 
 global VAR
+global SETTINGS
 
 if VAR.eye_track == 1
     durTrialMax = VAR.trial_len; % max trial duration [s]
@@ -25,17 +26,23 @@ if VAR.report == 1
     pre_HorzKey = 0;
 end
 
-fix_loc_label = randi([1 4],1,VAR.num_trial);
+% fix_loc_label = randi([1 4],1,VAR.num_trial);
+fix_loc_label = randi([1 2],1,VAR.num_trial);
+
 answer = [];
 
 %% animation
 [vbl, start] = Screen('Flip', w);
+% for online plotting
+if VAR.eye_track == 1; figure('Name','Online GUI','Position',SETTINGS.GUI_coordinates,'Renderer', 'Painters'); axis([-5 5 -5 5]); axis square; grid on; hold on; end 
 for t = 1:VAR.num_trial
     if VAR.grating_task == 1
         if VAR.phys_stim(t) == 1 % Right
-            fix_loc = VAR.potential_loc_grat(fix_loc_label(1,t),:);
+%             fix_loc = VAR.potential_loc_grat(fix_loc_label(1,t),:);
+            fix_loc = VAR.potential_loc_grat(4,:);
         else %Left
-            fix_loc = VAR.potential_loc(fix_loc_label(1,t),:);
+%             fix_loc = VAR.potential_loc(fix_loc_label(1,t),:);
+            fix_loc = VAR.potential_loc(1,:);
         end
     else
         fix_loc = VAR.potential_loc(fix_loc_label(1,t),:);
@@ -108,6 +115,21 @@ for t = 1:VAR.num_trial
             memoryBuffer_eyesize(counter,4) = hight;
             %memoryBuffer_eyepos(counter,:) = [(vbl-start)*1000,t,x_eye,y_eye];
             %memoryBuffer_eyesize(counter,:) = [(vbl-start)*1000,t,width,hight];
+            
+            % Online plot
+            try 
+                x_eye_pre = memoryBuffer_eyepos(counter-1,3);
+                y_eye_pre = memoryBuffer_eyepos(counter-1,4);
+                line([x_eye_pre x_eye], [y_eye_pre y_eye], 'Color','k','Marker','none','LineWidth',0.2)
+            catch
+            end
+            drawnow
+        end
+        if VAR.eye_track == 1
+            filename = [VAR.fig_dir '/reco_online_phys_' num2str(superblock) '_' num2str(triad) '_' num2str(t) '.png'];
+            saveas(gcf,filename)
+            filename = [VAR.fig_dir '/reco_online_phys_' num2str(superblock) '_' num2str(triad) '_' num2str(t) '.fig'];
+            saveas(gcf,filename)
         end
     end
 end
@@ -128,13 +150,25 @@ end
 
 
 if VAR.eye_track == 1
-    filename = [VAR.subj_dist '/report/phys/fixloc_' num2str(superblock) '_' num2str(triad) '.csv'];
-    buffer = array2table(memoryBuffer_fixloc);
-    writetable(buffer, filename, 'WriteVariableNames', false);
-    filename = [VAR.subj_dist '/report/phys/eyepos_' num2str(superblock) '_' num2str(triad) '.csv'];
-    buffer = array2table(memoryBuffer_eyepos);
-    writetable(buffer, filename, 'WriteVariableNames', false);
-    filename = [VAR.subj_dist '/report/phys/eyesize_' num2str(superblock) '_' num2str(triad) '.csv'];
-    buffer = array2table(memoryBuffer_eyesize);
-    writetable(buffer, filename, 'WriteVariableNames', false);
+    if VAR.report == 1
+        filename = [VAR.subj_dist '/report/phys/fixloc_' num2str(superblock) '_' num2str(triad) '.csv'];
+        buffer = array2table(memoryBuffer_fixloc);
+        writetable(buffer, filename, 'WriteVariableNames', false);
+        filename = [VAR.subj_dist '/report/phys/eyepos_' num2str(superblock) '_' num2str(triad) '.csv'];
+        buffer = array2table(memoryBuffer_eyepos);
+        writetable(buffer, filename, 'WriteVariableNames', false);
+        filename = [VAR.subj_dist '/report/phys/eyesize_' num2str(superblock) '_' num2str(triad) '.csv'];
+        buffer = array2table(memoryBuffer_eyesize);
+        writetable(buffer, filename, 'WriteVariableNames', false);
+    else
+        filename = [VAR.norepo_dir '/phys/fixloc_' num2str(superblock) '_' num2str(triad) '.csv'];
+        buffer = array2table(memoryBuffer_fixloc);
+        writetable(buffer, filename, 'WriteVariableNames', false);
+        filename = [VAR.norepo_dir '/phys/eyepos_' num2str(superblock) '_' num2str(triad) '.csv'];
+        buffer = array2table(memoryBuffer_eyepos);
+        writetable(buffer, filename, 'WriteVariableNames', false);
+        filename = [VAR.norepo_dir '/phys/eyesize_' num2str(superblock) '_' num2str(triad) '.csv'];
+        buffer = array2table(memoryBuffer_eyesize);
+        writetable(buffer, filename, 'WriteVariableNames', false);
+    end
 end
