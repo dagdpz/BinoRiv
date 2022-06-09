@@ -3,14 +3,14 @@ function binoriv_repo_plot_linking_ver2(subj,num_superblock,num_triad,num_trial,
 
 close all
 subj_type = 0;
-subj = 'Luba_0419'
+subj = 'Rebecca_0524_dark_monitorlun20'
 num_superblock = 1
 num_triad = 12
 num_trial = 8
 trial_len = 2
 report = 1
 only_grating = 1;
-eye_track = 1;
+eye_track = 0;
 colour_comb = 1; % 0 is (left:Red right:Blue), 1 is (left:Blue right:Red)
 monitor_x = 2560;
 monitor_y = 1440;
@@ -41,8 +41,8 @@ ratestorage_phys_vert = 0;
 ratestorage_phys_horz = 0;
 
 % load fixation spot location
-%variables = load([repo_dir '/variables_repo_*.mat']);
-variables = load([repo_dir '/variables_repo_20220419']);
+% variables = load([repo_dir '/variables_repo_*.mat']);
+variables = load([repo_dir '/variables_repo_20220524']);
 fp_loc = variables.VAR.potential_loc;
 try fp_loc_grat = variables.VAR.potential_loc_grat; catch; end
 
@@ -116,7 +116,7 @@ for spb = 1:num_superblock
                 if rem(i,2) == 1; area([(trial_len*num_trial)+0.001*vert_triad_br(i,1) (trial_len*num_trial)+0.001*vert_triad_br(i+1,1)], [-2.5 -2.5], 'FaceColor', [0.8 0.2 0], 'EdgeColor', 'none', 'FaceAlpha', .5); timestorage_br_vert = timestorage_br_vert + (vert_triad_br(i+1,1) - vert_triad_br(i,1)); end
             end
             catch
-                area([(trial_len*num_trial)+0.001*vert_triad_br(i,1) (trial_len*num_trial)+trial_len*num_trial], [-2.5 -2.5], 'color', [0.8 0.2 0], 'EdgeColor', 'none', 'FaceAlpha', .5);
+                area([(trial_len*num_trial)+0.001*vert_triad_br(i,1) (trial_len*num_trial)+trial_len*num_trial], [-2.5 -2.5], 'FaceColor', [0.8 0.2 0], 'EdgeColor', 'none', 'FaceAlpha', .5);
                 timestorage_br_vert = timestorage_br_vert + (1000*trial_len*num_trial - vert_triad_br(i,1));
             end
             try
