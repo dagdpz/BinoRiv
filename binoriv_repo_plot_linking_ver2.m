@@ -3,14 +3,14 @@ function binoriv_repo_plot_linking_ver2(subj,num_superblock,num_triad,num_trial,
 
 close all
 subj_type = 0;
-subj = 'Rebecca_0524_dark_monitorlun20'
+subj = 'Rebecca_0609'
 num_superblock = 1
 num_triad = 12
 num_trial = 8
 trial_len = 2
 report = 1
 only_grating = 1;
-eye_track = 0;
+eye_track = 1;
 colour_comb = 1; % 0 is (left:Red right:Blue), 1 is (left:Blue right:Red)
 monitor_x = 2560;
 monitor_y = 1440;
@@ -42,7 +42,7 @@ ratestorage_phys_horz = 0;
 
 % load fixation spot location
 % variables = load([repo_dir '/variables_repo_*.mat']);
-variables = load([repo_dir '/variables_repo_20220524']);
+variables = load([repo_dir '/variables_repo_20220609']);
 fp_loc = variables.VAR.potential_loc;
 try fp_loc_grat = variables.VAR.potential_loc_grat; catch; end
 
