@@ -10,15 +10,15 @@ subj = 'Rebecca_dc_test_0617';
 num_superblock = 2;
 num_triad = 12;
 num_trial = 8;
-trial_len = 2;
+trial_len = 2000; % ms
 report = 0;
 only_grating = 1;
-eye_track = 1;
 colour_comb = 1; % 0 is (left:Red right:Blue), 1 is (left:Blue right:Red)
 monitor_x = 2560;
 monitor_y = 1440;
 screen_width = 61-1.4;
 dist_scr = 47; % distance from screen (cm)
+saccade_allow = 350; % ms
 
 threshold = 1; % deg, range you allow as a gaze fixation
 
@@ -49,6 +49,7 @@ try fp_loc_grat = variables.VAR.potential_loc_grat; catch; end
 %% main
 success = 0;
 failure = 0;
+result = [];
 for spb = 1:num_superblock
     for trd = 1:num_triad
         % phys
@@ -59,7 +60,7 @@ for spb = 1:num_superblock
         distance = [];
         eyeposfile_phys = readtable([phys_dir '/eyepos_' num2str(spb) '_' num2str(trd) '.csv']);
         fixlocfile_phys = readtable([phys_dir '/fixloc_' num2str(spb) '_' num2str(trd) '.csv']);
-        for i = 1:height(eyeposfile_phys); time = vertcat(time, eyeposfile_phys{i,1}/1000); end
+        for i = 1:height(eyeposfile_phys); time = vertcat(time, eyeposfile_phys{i,1}); end
         for i = 1:height(eyeposfile_phys); eyepos_x = vertcat(eyepos_x, eyeposfile_phys{i,3}); end %deg
         for i = 1:height(eyeposfile_phys); eyepos_y = vertcat(eyepos_y, eyeposfile_phys{i,4}); end
         for i = 1:height(fixlocfile_phys); fix_loc(i,1) = fixlocfile_phys{i,1}; end
@@ -128,29 +129,37 @@ for spb = 1:num_superblock
         end
        
 
-        for trl = 1:num_trial
+        for trl = 1:num_trial            
             success_count = 0;
-            num_sample = time < (trl*trial_len);
             if trl == 1
-                num_presample = 1;
-                num_sample = nnz(num_sample);
+                num_saccade_sample = time < saccade_allow;
+                num_saccade_sample = nnz(num_saccade_sample); % nnz counts non-zero values
+                num_saccade_sample_post = time < (trl*trial_len)+saccade_allow;
+                num_saccade_sample_post = nnz(num_saccade_sample_post);
+            elseif trl == length(num_trial)
+                num_saccade_sample = time < ((trl-1)*trial_len)+saccade_allow;
+                num_saccade_sample = nnz(num_saccade_sample);
+                num_saccade_sample_post = time < (trl*trial_len);
+                num_saccade_sample_post = nnz(num_saccade_sample_post);
             else 
-                num_presample = time < ((trl-1)*trial_len);
-                num_presample = nnz(num_presample);
-                num_sample = nnz(num_sample);
+                num_saccade_sample = time < ((trl-1)*trial_len)+saccade_allow;
+                num_saccade_sample = nnz(num_saccade_sample);
+                num_saccade_sample_post = time < (trl*trial_len)+saccade_allow;
+                num_saccade_sample_post = nnz(num_saccade_sample_post);
             end
 
-            for i = num_presample:num_sample
+            for i = num_saccade_sample:num_saccade_sample_post
                 if distance(i,:) < threshold; success_count = success_count +1; end
             end
             
-            
-            if success_count < (num_sample-num_presample)/2
+            if success_count < (num_saccade_sample_post-num_saccade_sample)/2
                 sprintf('Fixation [superblock %d, triad %d, trial %d]: Failed', spb, trd, trl)
                 failure = failure + 1;
-            elseif success_count > (num_sample-num_presample)/2
+                result = vertcat(result, "failed");
+            elseif success_count > (num_saccade_sample_post-num_saccade_sample)/2
                 sprintf('Fixation [superblock %d, triad %d, trial %d]: Successed', spb, trd, trl)
                 success = success + 1;
+                result = vertcat(result, "successed");
             end
             
             
